@@ -45,6 +45,8 @@ class Dashbord extends React.Component {
 
     state = {
         dialogLogin: true,
+        dialogAgenda: false,
+        dialogDias: false,
         dialogServico: false,
         dialogCadastrarServico: false,
         dialogHorariosLiberados: false,
@@ -56,7 +58,8 @@ class Dashbord extends React.Component {
             valor: '',
             qtdHorarios: 1,
         },
-        dias: []
+        dias: [],
+        agenda: []
     }
 
     handleInput = e => this.setState({[e.target.name]: e.target.value})
@@ -185,22 +188,38 @@ class Dashbord extends React.Component {
             })
     }
 
+    buscaAgenda = () => {
+        firebase
+            .database()
+            .ref('agenda')
+            .once('value')
+            .then(callback => {
+                if (callback.val() !== null) {
+                    this.setState({agenda: Object.values(callback.val()[new Date().getDay()].horarios)})
+                    sessionStorage.setItem('dbarbershop-agenda', JSON.stringify(callback.val()))
+                }
+            })
+    }
+
     componentDidMount() {
         this.login()
         this.buscaDias()
         this.buscaServicos()
+        this.buscaAgenda()
     }
 
     render() {
         const {
             dialogLogin,
+            dialogAgenda,
             dialogServico,
             dialogCadastrarServico,
             dialogHorariosLiberados,
             dialogDias,
             servicos,
             servico,
-            dias
+            dias,
+            agenda
         } = this.state
         return (
             <div>
@@ -212,6 +231,11 @@ class Dashbord extends React.Component {
                             </Typography>
                         </Toolbar>
                     </AppBar>
+                    <div className={'div-container'}>
+                        <div id={'div-botao'} onClick={() => this.setState({dialogAgenda: true})}>
+                            <FormLabel id={'label-botao'}>Agenda do dia</FormLabel>
+                        </div>
+                    </div>
                     <div className={'div-container'}>
                         <div id={'div-botao'} onClick={() => this.setState({dialogServico: true})}>
                             <FormLabel id={'label-botao'}>Serviços</FormLabel>
@@ -264,6 +288,36 @@ class Dashbord extends React.Component {
                                         onClick={this.onClickLogin}>
                                     Entrar
                                 </Button>
+                            </DialogContent>
+                        </div>
+                    </Dialog>
+                    <Dialog open={dialogAgenda} fullScreen={true}>
+                        <div id={'div-dialog-full-screen'}>
+                            <div id={'div-voltar'}>
+                                <ArrowBack onClick={() => this.setState({dialogAgenda: false})}/>
+                                <FormLabel id={'label-voltar'}>Voltar</FormLabel>
+                            </div>
+                            <DialogTitle style={{fontFamily: 'Nunito', paddingTop: 10}} color={'secondary'}>
+                                Agenda
+                            </DialogTitle>
+                            <DialogContent>
+                                {
+                                    agenda.map(a => (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                marginTop: 10
+                                            }}
+                                            key={a.nome}>
+                                            <FormLabel id={'label-servico'}>{a.nome}</FormLabel>
+                                            <FormLabel id={'label-valor'}>{a.telefone}</FormLabel>
+                                            <FormLabel id={'label-valor'}>{a.servico}</FormLabel>
+                                            <FormLabel id={'label-valor'}>{a.hora}</FormLabel>
+                                            <FormLabel id={'label-valor'}>{a.data}</FormLabel>
+                                        </div>
+                                    ))
+                                }
                             </DialogContent>
                         </div>
                     </Dialog>
@@ -432,6 +486,7 @@ class Dashbord extends React.Component {
                                             {
                                                 d.horarios.map(h => (
                                                     <FormControlLabel
+                                                        key={h.hora}
                                                         control={<Switch color={'secondary'} checked={h.reserva}/>}
                                                         label={`${h.hora} - ${h.reserva ? 'Reservado' : 'Livre'}`}
                                                         style={{

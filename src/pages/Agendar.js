@@ -50,8 +50,8 @@ class Agendar extends React.Component {
         dialogAgendado: false,
         dialogHorario: false,
         dialogIdentificacao: false,
+        dialogAviso: false,
         servicos: [],
-        horarios: [],
         horariosLivres: [],
         dias: [],
         dia: new Date().getDay(),
@@ -75,44 +75,74 @@ class Agendar extends React.Component {
     }
 
     handleChange = e => {
-        const {dias} = this.state
+        const {dias, servico} = this.state
         let dia = e.target.value
         let horarios = dias[dia].horarios
-        this.setState({dia: dia, horariosLivres: horarios})
+        this.setState({
+            dia: dia,
+            horariosLivres: this.verificaHorarios(horarios, servico)
+        })
     }
 
     onClickServico = servico => {
-        const {horarios} = this.state
+        const {dias, dia} = this.state
+        let horarios = dias[dia].horarios
+        this.setState({
+            dialogServico: false,
+            dialogHorario: true,
+            horariosLivres: this.verificaHorarios(horarios, servico),
+            servico: servico
+        })
+    }
+
+    verificaHorarios = (horarios, servico) => {
         let horariosLivres = []
         horarios.forEach((h, index) => {
             if (servico.qtdHorarios === 1) {
                 if (!h.reserva) horariosLivres.push(h)
             } else {
-                let reserva = (!horarios[(horarios.length === index + 1) ? horarios.length - 1 : index + 1].reserva && !horarios[(index - 1 !== -1) ? index - 1 : 0].reserva && !h.reserva)
-                if (reserva) horariosLivres.push(h)
+                let a = !horarios[(horarios.length === index + 1) ? horarios.length - 1 : index + 1].reserva
+                let b = !h.reserva
+                if ((a && b)) horariosLivres.push(h)
             }
         })
-        this.setState({dialogServico: false, dialogHorario: true, horariosLivres: horariosLivres, servico: servico})
+        return horariosLivres
     }
 
     onClickHorario = horario => {
-        this.setState({horario: horario, hora: horario.hora, dialogHorario: false, dialogIdentificacao: true})
+        const {dias, dia} = this.state
+        let ativo = true
+        for (let i = 0; i < dias.length; i++) {
+            if (dia === dias[i].dia && !dias[i].ativado) {
+                ativo = false
+                break
+            }
+        }
+        if (ativo)
+            this.setState({horario: horario, hora: horario.hora, dialogHorario: false, dialogIdentificacao: true})
+        else
+            this.setState({dialogAviso: true})
     }
 
     onClickAgendar = () => {
         const {nome, telefone, horario, servico, dia, hora} = this.state
-        horario.nome = nome
-        horario.telefone = telefone
-        horario.servico = servico.servico
-        horario.hora = hora
         horario.reserva = true
-        horario.data = moment().format('DD/MM/YYYY')
-        firebase
-            .database()
-            .ref('dias/' + dia + '/horarios/' + horario.id)
-            .update(horario)
-            .then(() => console.log('ok'))
-            .catch(e => console.error(e))
+        let agenda = {
+            nome: nome,
+            telefone: telefone,
+            servico: servico.servico,
+            hora: hora,
+            data: moment().format('DD/MM/YYYY'),
+            id: new Date().getTime()
+        }
+        if (servico.qtdHorarios === 1) {
+            this.gravaHorario(dia, horario)
+            this.gravaAgenda(dia, agenda)
+        } else {
+            this.gravaHorario(dia, horario)
+            this.gravaHorario(dia, {id: (horario.id + 1), reserva: true})
+            this.gravaAgenda(dia, agenda)
+        }
         localStorage.setItem('dbarbershop-nome', nome)
         localStorage.setItem('dbarbershop-telefone', telefone)
         let historico = localStorage.getItem('dbarbershop-historico')
@@ -120,6 +150,50 @@ class Agendar extends React.Component {
         historico.push(horario)
         localStorage.setItem('dbarbershop-historico', JSON.stringify(historico))
         this.setState({dialogAgendado: true})
+        let mensagem = `Bom dia é o *${nome}*.\nMarquei um horário ${(dia === new Date().getDay()) ? 'hoje' : this.diasSemana(dia)}, às ${hora} para fazer *${servico.servico}.*\n\nMeu telefone pra contato: *${telefone}*`
+        mensagem = window.encodeURIComponent(mensagem)
+        window.open(`https://api.whatsapp.com/send?phone=5551993031434&text=${mensagem}`, '_blank')
+        this.props.history.replace({
+            pathname: '/',
+            marcado: 'ok'
+        })
+    }
+
+    diasSemana = dia => {
+        switch (dia) {
+            case 0:
+                return 'domingo'
+            case 1:
+                return 'segunda'
+            case 2:
+                return 'terça'
+            case 3:
+                return 'quarta'
+            case 4:
+                return 'quinta'
+            case 5:
+                return 'sexta'
+            default:
+                return 'sábado'
+        }
+    }
+
+    gravaHorario = (dia, horario) => {
+        firebase
+            .database()
+            .ref('dias/' + dia + '/horarios/' + horario.id)
+            .update(horario)
+            .then(() => console.log('ok'))
+            .catch(e => console.error(e))
+    }
+
+    gravaAgenda = (dia, agenda) => {
+        firebase
+            .database()
+            .ref('agenda/' + dia + '/horarios/' + agenda.id)
+            .update(agenda)
+            .then(() => console.log('ok'))
+            .catch(e => console.error(e))
     }
 
     servicos = () => {
@@ -131,10 +205,7 @@ class Agendar extends React.Component {
         let dias = sessionStorage.getItem('dbarbershop-dias')
         this.setState({dias: (dias !== null) ? JSON.parse(dias) : []})
         dias = (dias !== null) ? JSON.parse(dias) : []
-        this.setState({
-            horarios: dias[new Date().getDay()].horarios,
-            horariosLivres: dias[new Date().getDay()].horarios
-        })
+        this.setState({horariosLivres: dias[new Date().getDay()].horarios})
     }
 
     identificacao = () => {
@@ -151,12 +222,12 @@ class Agendar extends React.Component {
 
     render() {
         const {
+            dialogAviso,
             dialogServico,
             dialogHorario,
             dialogIdentificacao,
             dialogAgendado,
             servicos,
-            horarios,
             horariosLivres,
             dias,
             dia,
@@ -176,12 +247,14 @@ class Agendar extends React.Component {
                             <DialogTitle style={{fontFamily: 'Nunito', paddingTop: 10}}
                                          color={'secondary'}>Serviço</DialogTitle>
                             <DialogContent>
-                                <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}} color={'white'}>
+                                <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}}
+                                                   color={'white'}>
                                     Escolha o serviço que deseja agendar
                                 </DialogContentText>
                                 {
                                     servicos.map(s => (
-                                        <div id={'div-servico'} key={s.servico} onClick={() => this.onClickServico(s)}>
+                                        <div id={'div-servico'} key={s.servico}
+                                             onClick={() => this.onClickServico(s)}>
                                             <FormLabel id={'label-servico'}>{s.servico}</FormLabel>
                                             <FormLabel id={'label-valor'}>{s.valor.toLocaleString('pt-BR', {
                                                 style: 'currency',
@@ -196,17 +269,19 @@ class Agendar extends React.Component {
                     <Dialog open={dialogHorario} fullScreen={true}>
                         <div id={'div-dialog-full-screen'}>
                             <div id={'div-voltar'}>
-                                <ArrowBack onClick={() => this.setState({
-                                    dialogServico: true,
-                                    dialogHorario: false,
-                                    horariosLivres: horarios
-                                })}/>
+                                <ArrowBack onClick={() => {
+                                    this.setState({
+                                        dialogServico: true,
+                                        dialogHorario: false
+                                    })
+                                }}/>
                                 <FormLabel id={'label-voltar'}>Voltar</FormLabel>
                             </div>
                             <DialogTitle style={{fontFamily: 'Nunito', paddingTop: 10}}
                                          color={'secondary'}>Horário</DialogTitle>
                             <DialogContent>
-                                <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}} color={'white'}>
+                                <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}}
+                                                   color={'white'}>
                                     Escolha o horário que deseja agendar
                                 </DialogContentText>
                                 <Box p={1}/>
@@ -220,10 +295,9 @@ class Agendar extends React.Component {
                                         onChange={this.handleChange}
                                     >
                                         {
-                                            dias.map(d => {
-                                                if (d.ativado)
-                                                    return (<MenuItem key={d.dia} value={d.dia}>{d.nome}</MenuItem>)
-                                            })
+                                            dias.map(d => (
+                                                <MenuItem key={d.dia} value={d.dia}>{d.nome}</MenuItem>
+                                            ))
                                         }
                                     </Select>
                                 </FormControl>
@@ -260,7 +334,8 @@ class Agendar extends React.Component {
                             <DialogTitle style={{fontFamily: 'Nunito', paddingTop: 10}}
                                          color={'secondary'}>Identificação</DialogTitle>
                             <DialogContent>
-                                <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}} color={'white'}>
+                                <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}}
+                                                   color={'white'}>
                                     Digite seu nome e telefone
                                 </DialogContentText>
                                 <Box p={1}/>
@@ -289,7 +364,7 @@ class Agendar extends React.Component {
                                     fullWidth={true}
                                     onChange={this.handleInput}/>
                                 <Box p={1}/>
-                                <div id={'div-botao'} onClick={this.onClickAgendar}>
+                                <div id={'div-botao'} onClick={() => this.setState({dialogAgendado: true})}>
                                     <FormLabel id={'label-botao'}>Marcar Horário</FormLabel>
                                 </div>
                             </DialogContent>
@@ -298,18 +373,34 @@ class Agendar extends React.Component {
                     <Dialog open={dialogAgendado}>
                         <div id={'div-dialog'}>
                             <DialogTitle style={{fontFamily: 'Nunito', paddingTop: 10}}
-                                         color={'secondary'}>Marcado</DialogTitle>
+                                         color={'secondary'}>Marcar horário</DialogTitle>
                             <DialogContent>
-                                <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}} color={'white'}>
-                                    Horário marcado com sucesso
+                                <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}}
+                                                   color={'white'}>
+                                    Você será redirecionado para o WhatsApp, envie a mensagem para confirmar o
+                                    agendamento.
                                 </DialogContentText>
                             </DialogContent>
                             <DialogActions>
                                 <Button color={'secondary'} variant={'outlined'}
-                                        onClick={() => this.props.history.replace({
-                                            pathname: '/',
-                                            marcado: 'ok'
-                                        })}>OK</Button>
+                                        onClick={this.onClickAgendar}>OK, Confirmar</Button>
+                            </DialogActions>
+                        </div>
+                    </Dialog>
+                    <Dialog open={dialogAviso}>
+                        <div id={'div-dialog'}>
+                            <DialogTitle style={{fontFamily: 'Nunito', paddingTop: 10}}
+                                         color={'secondary'}>Opa!!!</DialogTitle>
+                            <DialogContent>
+                                <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}}
+                                                   color={'white'}>
+                                    Infelizmento não estamos marcando horário para essa data, se possível olha outro
+                                    dia.
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button color={'secondary'} variant={'outlined'}
+                                        onClick={() => this.setState({dialogAviso: false})}>OK</Button>
                             </DialogActions>
                         </div>
                     </Dialog>

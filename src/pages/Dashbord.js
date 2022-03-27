@@ -19,7 +19,7 @@ import {
     ThemeProvider, Toolbar, Typography
 } from '@mui/material'
 import firebase from '../firebase'
-import {Add, ArrowBack, Delete, Edit} from '@mui/icons-material'
+import {Add, ArrowBack, Delete, Edit, RemoveRedEye} from '@mui/icons-material'
 import {withStyles} from '@mui/styles'
 import {liberarTodos} from '../util'
 
@@ -46,6 +46,7 @@ class Dashbord extends React.Component {
     state = {
         dialogLogin: true,
         dialogAgenda: false,
+        dialogReserva: false,
         dialogDias: false,
         dialogServico: false,
         dialogCadastrarServico: false,
@@ -57,6 +58,11 @@ class Dashbord extends React.Component {
             servico: '',
             valor: '',
             qtdHorarios: 1,
+        },
+        reserva: {
+            nome: '',
+            telefone: '',
+            servico: ''
         },
         dias: [],
         agenda: []
@@ -94,6 +100,10 @@ class Dashbord extends React.Component {
             .update(dias)
             .then(() => console.log)
             .catch(e => console.error(e))
+    }
+
+    onClickVerReserva = reserva => {
+        this.setState({dialogReserva: true, reserva: reserva})
     }
 
     onClickGravar = () => {
@@ -142,6 +152,15 @@ class Dashbord extends React.Component {
             .ref('servicos/' + id)
             .remove()
             .then(() => this.buscaServicos())
+            .catch(e => console.error(e))
+    }
+
+    onClickDeletarAgenda = agenda => {
+        firebase
+            .database()
+            .ref('agenda/' + agenda.dia + '/horarios/' + agenda.id)
+            .remove()
+            .then(() => this.buscaAgenda())
             .catch(e => console.error(e))
     }
 
@@ -197,6 +216,9 @@ class Dashbord extends React.Component {
                 if (callback.val() !== null) {
                     this.setState({agenda: Object.values(callback.val()[new Date().getDay()].horarios)})
                     sessionStorage.setItem('dbarbershop-agenda', JSON.stringify(callback.val()))
+                } else {
+                    this.setState({agenda: []})
+                    sessionStorage.setItem('dbarbershop-agenda', JSON.stringify([]))
                 }
             })
     }
@@ -215,9 +237,11 @@ class Dashbord extends React.Component {
             dialogServico,
             dialogCadastrarServico,
             dialogHorariosLiberados,
+            dialogReserva,
             dialogDias,
             servicos,
             servico,
+            reserva,
             dias,
             agenda
         } = this.state
@@ -303,18 +327,36 @@ class Dashbord extends React.Component {
                             <DialogContent>
                                 {
                                     agenda.map(a => (
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                marginTop: 10
-                                            }}
-                                            key={a.nome}>
-                                            <FormLabel id={'label-servico'}>{a.nome}</FormLabel>
-                                            <FormLabel id={'label-valor'}>{a.telefone}</FormLabel>
-                                            <FormLabel id={'label-valor'}>{a.servico}</FormLabel>
-                                            <FormLabel id={'label-valor'}>{a.hora}</FormLabel>
-                                            <FormLabel id={'label-valor'}>{a.data}</FormLabel>
+                                        <div key={a.nome}>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                    justifyContent: 'space-between'
+                                                }}>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        marginTop: 10
+                                                    }}>
+                                                    <FormLabel id={'label-servico'}>{a.nome}</FormLabel>
+                                                    <FormLabel id={'label-valor'}>{a.telefone}</FormLabel>
+                                                    <FormLabel id={'label-valor'}>{a.servico}</FormLabel>
+                                                    <FormLabel id={'label-valor'}>{a.hora}</FormLabel>
+                                                    <FormLabel id={'label-valor'}>{a.data}</FormLabel>
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        flexDirection: 'column',
+                                                        marginTop: 10
+                                                    }}>
+                                                    <Delete onClick={() => this.onClickDeletarAgenda(a)}/>
+                                                </div>
+                                            </div>
                                         </div>
                                     ))
                                 }
@@ -485,19 +527,37 @@ class Dashbord extends React.Component {
                                             />
                                             {
                                                 d.horarios.map(h => (
-                                                    <FormControlLabel
-                                                        key={h.hora}
-                                                        control={<Switch color={'secondary'} checked={h.reserva}/>}
-                                                        label={`${h.hora} - ${h.reserva ? 'Reservado' : 'Livre'}`}
+                                                    <div
                                                         style={{
-                                                            color: '#f89e00'
-                                                        }}
-                                                        onChange={(e, checked) => {
-                                                            h.reserva = checked
-                                                            this.setState({dias: dias})
-                                                            this.gravarDias(dias)
-                                                        }}
-                                                    />
+                                                            display: 'flex',
+                                                            flexDirection: 'row',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center'
+                                                        }}>
+                                                        <div>
+                                                            <FormControlLabel
+                                                                key={h.hora}
+                                                                control={<Switch color={'secondary'}
+                                                                                 checked={h.reserva}/>}
+                                                                label={`${h.hora} - ${h.reserva ? 'Reservado' : 'Livre'}`}
+                                                                style={{
+                                                                    color: '#f89e00'
+                                                                }}
+                                                                onChange={(e, checked) => {
+                                                                    h.reserva = checked
+                                                                    this.setState({dias: dias})
+                                                                    this.gravarDias(dias)
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            {
+                                                                h.reserva &&
+                                                                <RemoveRedEye style={{color: 'white'}}
+                                                                              onClick={() => this.onClickVerReserva(h)}/>
+                                                            }
+                                                        </div>
+                                                    </div>
                                                 ))
                                             }
                                         </div>
@@ -518,6 +578,30 @@ class Dashbord extends React.Component {
                             <DialogActions>
                                 <Button color={'secondary'} variant={'outlined'}
                                         onClick={() => this.setState({dialogHorariosLiberados: false})}>OK</Button>
+                            </DialogActions>
+                        </div>
+                    </Dialog>
+                    <Dialog open={dialogReserva}>
+                        <div id={'div-dialog'}>
+                            <DialogTitle style={{fontFamily: 'Nunito', paddingTop: 10}}
+                                         color={'secondary'}>Reserva</DialogTitle>
+                            <DialogContent>
+                                <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}} color={'white'}>
+                                    Detalhes da reserva
+                                </DialogContentText>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column'
+                                    }}>
+                                    <FormLabel id={'label-servico'}>{`Nome: ${reserva.nome}`}</FormLabel>
+                                    <FormLabel id={'label-valor'}>{`Telefone: ${reserva.telefone}`}</FormLabel>
+                                    <FormLabel id={'label-valor'}>{`Serviço: ${reserva.servico}`}</FormLabel>
+                                </div>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button color={'secondary'} variant={'outlined'}
+                                        onClick={() => this.setState({dialogReserva: false})}>OK</Button>
                             </DialogActions>
                         </div>
                     </Dialog>

@@ -127,11 +127,17 @@ class Agendar extends React.Component {
     onClickAgendar = () => {
         const {nome, telefone, horario, servico, dia, hora} = this.state
         horario.reserva = true
+        horario.nome = nome
+        horario.telefone = telefone
+        horario.servico = servico.servico
+        horario.hora = hora
+        horario.dia = this.diasSemana(dia)
         let agenda = {
             nome: nome,
             telefone: telefone,
             servico: servico.servico,
             hora: hora,
+            dia: dia,
             data: moment().format('DD/MM/YYYY'),
             id: new Date().getTime()
         }
@@ -305,6 +311,7 @@ class Agendar extends React.Component {
                                 <div id={'div-horarios'}>
                                     <RadioGroup>
                                         {
+                                            // eslint-disable-next-line array-callback-return
                                             horariosLivres.map(h => {
                                                 if (!h.reserva)
                                                     return (<FormControlLabel
@@ -394,7 +401,7 @@ class Agendar extends React.Component {
                             <DialogContent>
                                 <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}}
                                                    color={'white'}>
-                                    Infelizmento não estamos marcando horário para essa data, se possível olha outro
+                                    Infelizmento não estamos marcando horário para essa data, se possível escolha outro
                                     dia.
                                 </DialogContentText>
                             </DialogContent>

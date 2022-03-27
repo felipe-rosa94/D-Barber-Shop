@@ -163,7 +163,7 @@ class Home extends React.Component {
                                         <div id={'div-servico'} key={index}>
                                             <FormLabel id={'label-servico'}>{h.servico}</FormLabel>
                                             <FormLabel id={'label-valor'}>{h.hora}</FormLabel>
-                                            <FormLabel id={'label-valor'}>{h.data}</FormLabel>
+                                            <FormLabel id={'label-valor'}>{h.dia}</FormLabel>
                                         </div>
                                     ))
                                 }

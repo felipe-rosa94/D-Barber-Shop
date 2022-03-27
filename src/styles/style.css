@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito&display=swap');
+
+#titulo {
+    font-family: 'Nunito', sans-serif;
+}
+
+#div-dialog-logo {
+    display: flex;
+    height: 100vh;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    background: #191919;
+}
+
+#card-media-logo {
+    width: 300px;
+    height: 300px;
+    border-radius: 150px;
+}
+
+.div-container {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 15px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.label-titulo-container {
+    color: white;
+    font-size: larger;
+    font-family: 'Nunito', sans-serif;
+}
+
+.label-descricao-horario {
+    color: #f89e00;
+    font-size: medium;
+    font-family: 'Nunito', sans-serif;
+}
+
+#div-servico {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+}
+
+#label-servico {
+    color: #f89e00;
+    font-size: medium;
+    font-family: 'Nunito', sans-serif;
+}
+
+#label-valor {
+    color: #ffffff;
+    font-size: medium;
+    font-family: 'Nunito', sans-serif;
+}
+
+#div-botao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    background: #f89e00;
+    border-radius: 50px;
+    margin-top: 10px;
+}
+
+#label-botao {
+    color: #191919;
+    font-size: larger;
+    font-family: 'Nunito', sans-serif;
+    font-weight: bold;
+}
+
+#agendar {
+    background: #191919;
+}
+
+#div-dialog-full-screen {
+    background: #191919;
+    height: 1000vh;
+}
+
+#div-dialog {
+    background: #191919;
+}
+
+#titulo-dialog {
+    color: #f89e00;
+}
+
+#div-horarios {
+    display: flex;
+    flex-direction: column;
+}
+
+#div-voltar {
+    display: flex;
+    align-items: center;
+    padding-right: 24px;
+    padding-left: 10px;
+    padding-top: 10px;
+}
+
+#label-voltar {
+    color: #ffffff;
+    font-size: medium;
+    font-family: 'Nunito', sans-serif;
+    margin-left: 10px;
+}
+
+#input {
+    color: white;
+}

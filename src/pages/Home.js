@@ -12,11 +12,15 @@ import {
     DialogTitle,
     FormLabel,
     ThemeProvider,
-    Toolbar, Typography
+    Toolbar,
+    Typography
 } from '@mui/material'
 import logo from '../images/logo.png'
 import firebase from '../firebase'
 import {ArrowBack} from '@mui/icons-material'
+
+const versao = '1.2'
+let dashbord = 0
 
 const theme = createTheme({
     palette: {
@@ -39,6 +43,14 @@ class Home extends React.Component {
         dialogMeusHorario: false,
         servicos: [],
         historico: []
+    }
+
+    onClickDashbord = () => {
+        if (dashbord >= 2) {
+            this.props.history.push('/dashbord')
+            dashbord = 0
+        }
+        dashbord++
     }
 
     logo = () => {
@@ -128,7 +140,7 @@ class Home extends React.Component {
                             </div>
                             <div className={'div-container'}>
                                 <div id={'div-botao'} onClick={() => this.props.history.push('/agendar')}>
-                                    <FormLabel id={'label-botao'}>Ver Horários</FormLabel>
+                                    <FormLabel id={'label-botao'}>Marcar Horário</FormLabel>
                                 </div>
                             </div>
                             <div className={'div-container'}>
@@ -137,6 +149,14 @@ class Home extends React.Component {
                                 </div>
                             </div>
                             <Box p={1}/>
+                            <div style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center"
+                            }}>
+                                <FormLabel id={'label-versao'}
+                                           onClick={this.onClickDashbord}>{`Versão: ${versao}`}</FormLabel>
+                            </div>
                         </div>
                     </div>
                     <Dialog open={dialogLogo} fullScreen={true}>

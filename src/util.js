@@ -36,7 +36,7 @@ const liberarTodos = [
             {
                 "id": 6,
                 "hora": "12:00h",
-                "reserva": false
+                "reserva": true
             },
             {
                 "id": 7,
@@ -148,7 +148,7 @@ const liberarTodos = [
             {
                 "id": 6,
                 "hora": "12:00h",
-                "reserva": false
+                "reserva": true
             },
             {
                 "id": 7,
@@ -260,7 +260,7 @@ const liberarTodos = [
             {
                 "id": 6,
                 "hora": "12:00h",
-                "reserva": false
+                "reserva": true
             },
             {
                 "id": 7,
@@ -372,7 +372,7 @@ const liberarTodos = [
             {
                 "id": 6,
                 "hora": "12:00h",
-                "reserva": false
+                "reserva": true
             },
             {
                 "id": 7,
@@ -484,7 +484,7 @@ const liberarTodos = [
             {
                 "id": 6,
                 "hora": "12:00h",
-                "reserva": false
+                "reserva": true
             },
             {
                 "id": 7,
@@ -596,7 +596,7 @@ const liberarTodos = [
             {
                 "id": 6,
                 "hora": "12:00h",
-                "reserva": false
+                "reserva": true
             },
             {
                 "id": 7,
@@ -708,7 +708,7 @@ const liberarTodos = [
             {
                 "id": 6,
                 "hora": "12:00h",
-                "reserva": false
+                "reserva": true
             },
             {
                 "id": 7,
@@ -785,4 +785,17 @@ const liberarTodos = [
     }
 ]
 
-export {liberarTodos}
+const isDebug = () => {
+    try {
+        return (window.location.host === 'localhost:3000')
+    } catch (e) {
+
+    }
+}
+
+const timestamp = () => {
+    const date = new Date()
+    return `${date.getFullYear()}${date.getMonth() + 1}${date.getDate()}${date.getHours()}${date.getMinutes()}${date.getSeconds()}`
+}
+
+export {liberarTodos, isDebug, timestamp}

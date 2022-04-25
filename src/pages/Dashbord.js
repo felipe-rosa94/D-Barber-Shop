@@ -21,7 +21,7 @@ import {
 import firebase from '../firebase'
 import {Add, ArrowBack, Delete, Edit, RemoveRedEye} from '@mui/icons-material'
 import {withStyles} from '@mui/styles'
-import {liberarTodos} from '../util'
+import {liberarTodos, timestamp} from '../util'
 
 const theme = createTheme({
     palette: {
@@ -51,6 +51,7 @@ class Dashbord extends React.Component {
         dialogServico: false,
         dialogCadastrarServico: false,
         dialogHorariosLiberados: false,
+        dialogLiberarHorarios: false,
         usuario: '',
         senha: '',
         servicos: [],
@@ -82,6 +83,21 @@ class Dashbord extends React.Component {
     }
 
     onClickLiberarTodos = () => {
+        this.setState({dialogLiberarHorarios: false})
+        let agenda = localStorage.getItem('dbarbershop-agenda')
+        agenda = (agenda !== null) ? JSON.parse(agenda) : []
+        firebase
+            .database()
+            .ref('historico/' + timestamp())
+            .set(agenda)
+            .then(() => console.log('ok'))
+            .catch(e => console.error(e))
+        firebase
+            .database()
+            .ref('agenda/')
+            .remove()
+            .then(() => console.log('ok'))
+            .catch(e => console.error(e))
         firebase
             .database()
             .ref('dias/')
@@ -89,22 +105,25 @@ class Dashbord extends React.Component {
             .then(() => {
                 this.setState({dialogHorariosLiberados: true})
                 this.buscaDias()
+                this.buscaAgenda()
             })
             .catch(e => console.error(e))
+        localStorage.setItem('dbarbershop-agenda', JSON.stringify([]))
     }
 
-    gravarDias = dias => {
+    onClickLoja = () =>
+        this.props.history.push('/')
+
+    gravarDias = dias =>
         firebase
             .database()
             .ref('dias/')
             .update(dias)
             .then(() => console.log)
             .catch(e => console.error(e))
-    }
 
-    onClickVerReserva = reserva => {
+    onClickVerReserva = reserva =>
         this.setState({dialogReserva: true, reserva: reserva})
-    }
 
     onClickGravar = () => {
         const {servico, servicos} = this.state
@@ -187,10 +206,10 @@ class Dashbord extends React.Component {
             .ref('servicos')
             .once('value')
             .then(callback => {
-                if (callback.val() !== null) {
+                if (callback.val() !== null)
                     this.setState({servicos: callback.val()})
-                    sessionStorage.setItem('dbarbershop-servico', JSON.stringify(callback.val()))
-                }
+                else
+                    this.setState({servicos: []})
             })
     }
 
@@ -200,10 +219,8 @@ class Dashbord extends React.Component {
             .ref('dias')
             .once('value')
             .then(callback => {
-                if (callback.val() !== null) {
+                if (callback.val() !== null)
                     this.setState({dias: callback.val()})
-                    sessionStorage.setItem('dbarbershop-dias', JSON.stringify(callback.val()))
-                }
             })
     }
 
@@ -214,11 +231,19 @@ class Dashbord extends React.Component {
             .once('value')
             .then(callback => {
                 if (callback.val() !== null) {
-                    this.setState({agenda: Object.values(callback.val()[new Date().getDay()].horarios)})
-                    sessionStorage.setItem('dbarbershop-agenda', JSON.stringify(callback.val()))
+                    let agenda = Object.values(callback.val()[new Date().getDay()].horarios)
+                    agenda.sort((a, b) => {
+                        if (a.hora > b.hora)
+                            return 1
+                        if (a.hora < b.hora)
+                            return -1
+                        return 0
+                    })
+                    this.setState({agenda: agenda})
+                    localStorage.setItem('dbarbershop-agenda', JSON.stringify(Object.values(callback.val())))
                 } else {
                     this.setState({agenda: []})
-                    sessionStorage.setItem('dbarbershop-agenda', JSON.stringify([]))
+                    localStorage.setItem('dbarbershop-agenda', JSON.stringify([]))
                 }
             })
     }
@@ -237,6 +262,7 @@ class Dashbord extends React.Component {
             dialogServico,
             dialogCadastrarServico,
             dialogHorariosLiberados,
+            dialogLiberarHorarios,
             dialogReserva,
             dialogDias,
             servicos,
@@ -271,10 +297,17 @@ class Dashbord extends React.Component {
                         </div>
                     </div>
                     <div className={'div-container'}>
-                        <div id={'div-botao'} onClick={this.onClickLiberarTodos}>
+                        <div id={'div-botao'} onClick={() => this.setState({dialogLiberarHorarios: true})}>
                             <FormLabel id={'label-botao'}>Liberar todos os horários</FormLabel>
                         </div>
                     </div>
+
+                    <div className={'div-container'}>
+                        <div id={'div-botao'} onClick={this.onClickLoja}>
+                            <FormLabel id={'label-botao'}>Loja</FormLabel>
+                        </div>
+                    </div>
+
                     <Dialog open={dialogLogin} fullScreen={true}>
                         <div id={'div-dialog-full-screen'}>
                             <DialogTitle style={{fontFamily: 'Nunito', paddingTop: 10}} color={'secondary'}>
@@ -394,13 +427,13 @@ class Dashbord extends React.Component {
                                 {
                                     servicos.map(s => (
                                         <div
+                                            key={s.servico}
                                             style={{
                                                 display: 'flex',
                                                 justifyContent: 'space-between',
                                                 flexDirection: 'row',
                                                 marginTop: 10,
-                                            }}
-                                            key={s.servico}>
+                                            }}>
                                             <div
                                                 style={{
                                                     display: 'flex',
@@ -508,11 +541,13 @@ class Dashbord extends React.Component {
                             </DialogTitle>
                             <DialogContent>
                                 {
-                                    dias.map((d, index) => (
-                                        <div key={d.nome} style={{
-                                            display: 'flex',
-                                            flexDirection: 'column'
-                                        }}>
+                                    dias.map(d => (
+                                        <div
+                                            key={d.nome}
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column'
+                                            }}>
                                             <FormControlLabel
                                                 control={<Switch color={'secondary'} checked={d.ativado}/>}
                                                 label={`${d.nome} - ${d.ativado ? 'Liberado' : 'Bloqueado'}`}
@@ -528,6 +563,7 @@ class Dashbord extends React.Component {
                                             {
                                                 d.horarios.map(h => (
                                                     <div
+                                                        key={h.hora}
                                                         style={{
                                                             display: 'flex',
                                                             flexDirection: 'row',
@@ -545,6 +581,13 @@ class Dashbord extends React.Component {
                                                                 }}
                                                                 onChange={(e, checked) => {
                                                                     h.reserva = checked
+                                                                    h.nome = checked ? 'Administrador' : ''
+                                                                    if (!checked) {
+                                                                        delete h['dia']
+                                                                        delete h['nome']
+                                                                        delete h['servico']
+                                                                        delete h['telefone']
+                                                                    }
                                                                     this.setState({dias: dias})
                                                                     this.gravarDias(dias)
                                                                 }}
@@ -564,6 +607,23 @@ class Dashbord extends React.Component {
                                     ))
                                 }
                             </DialogContent>
+                        </div>
+                    </Dialog>
+                    <Dialog open={dialogLiberarHorarios}>
+                        <div id={'div-dialog'}>
+                            <DialogTitle style={{fontFamily: 'Nunito', paddingTop: 10}}
+                                         color={'secondary'}>Liberar horários</DialogTitle>
+                            <DialogContent>
+                                <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}} color={'white'}>
+                                    {'Deseja liberar todos os horários?\nFazendo isso você remove todas as reserva marcadas.'}
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button color={'secondary'} variant={'outlined'}
+                                        onClick={() => this.setState({dialogLiberarHorarios: false})}>Cancelar</Button>
+                                <Button color={'secondary'} variant={'outlined'}
+                                        onClick={this.onClickLiberarTodos}>Confirmar</Button>
+                            </DialogActions>
                         </div>
                     </Dialog>
                     <Dialog open={dialogHorariosLiberados}>
@@ -595,8 +655,14 @@ class Dashbord extends React.Component {
                                         flexDirection: 'column'
                                     }}>
                                     <FormLabel id={'label-servico'}>{`Nome: ${reserva.nome}`}</FormLabel>
-                                    <FormLabel id={'label-valor'}>{`Telefone: ${reserva.telefone}`}</FormLabel>
-                                    <FormLabel id={'label-valor'}>{`Serviço: ${reserva.servico}`}</FormLabel>
+                                    {
+                                        (reserva.telefone !== undefined) &&
+                                        <FormLabel id={'label-valor'}>{`Telefone: ${reserva.telefone}`}</FormLabel>
+                                    }
+                                    {
+                                        (reserva.servico !== undefined) &&
+                                        <FormLabel id={'label-valor'}>{`Serviço: ${reserva.servico}`}</FormLabel>
+                                    }
                                 </div>
                             </DialogContent>
                             <DialogActions>

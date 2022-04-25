@@ -24,6 +24,7 @@ import {withStyles} from '@mui/styles'
 import {ArrowBack} from '@mui/icons-material'
 import firebase from '../firebase'
 import moment from "moment";
+import {isDebug} from "../util";
 
 const theme = createTheme({
     palette: {
@@ -51,6 +52,7 @@ class Agendar extends React.Component {
         dialogHorario: false,
         dialogIdentificacao: false,
         dialogAviso: false,
+        dialogAvisoMensagem: '',
         servicos: [],
         horariosLivres: [],
         dias: [],
@@ -111,6 +113,11 @@ class Agendar extends React.Component {
 
     onClickHorario = horario => {
         const {dias, dia} = this.state
+        let dataSelecionada = this.converterStringEmData(horario.hora.replace('h', ''))
+        if ((new Date().getDay() === dia) && (new Date() > dataSelecionada)) return this.setState({
+            dialogAviso: true,
+            dialogAvisoMensagem: 'Você está tentanto marcar um horário inferior ao atual.'
+        })
         let ativo = true
         for (let i = 0; i < dias.length; i++) {
             if (dia === dias[i].dia && !dias[i].ativado) {
@@ -121,11 +128,21 @@ class Agendar extends React.Component {
         if (ativo)
             this.setState({horario: horario, hora: horario.hora, dialogHorario: false, dialogIdentificacao: true})
         else
-            this.setState({dialogAviso: true})
+            this.setState({
+                dialogAviso: true,
+                dialogAvisoMensagem: 'Infelizmento não estamos marcando horário para essa data, se possível escolha outro dia.'
+            })
+    }
+
+    converterStringEmData = hora => {
+        hora = hora.split(':')
+        const dt = new Date()
+        return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), hora[0], hora[1])
     }
 
     onClickAgendar = () => {
         const {nome, telefone, horario, servico, dia, hora} = this.state
+        if (nome === '') return alert('Nome inválido')
         horario.reserva = true
         horario.nome = nome
         horario.telefone = telefone
@@ -146,7 +163,12 @@ class Agendar extends React.Component {
             this.gravaAgenda(dia, agenda)
         } else {
             this.gravaHorario(dia, horario)
-            this.gravaHorario(dia, {id: (horario.id + 1), reserva: true})
+            this.gravaHorario(dia, {
+                id: (horario.id + 1),
+                nome: horario.nome,
+                telefone: horario.telefone,
+                reserva: true
+            })
             this.gravaAgenda(dia, agenda)
         }
         localStorage.setItem('dbarbershop-nome', nome)
@@ -158,7 +180,8 @@ class Agendar extends React.Component {
         this.setState({dialogAgendado: true})
         let mensagem = `Bom dia é o *${nome}*.\nMarquei um horário ${(dia === new Date().getDay()) ? 'hoje' : this.diasSemana(dia)}, às ${hora} para fazer *${servico.servico}.*\n\nMeu telefone pra contato: *${telefone}*`
         mensagem = window.encodeURIComponent(mensagem)
-        window.open(`https://api.whatsapp.com/send?phone=5551993031434&text=${mensagem}`, '_blank')
+        if (!isDebug())
+            window.open(`https://api.whatsapp.com/send?phone=5551${isDebug() ? '993031434' : '984266928'}&text=${mensagem}`, '_blank')
         this.props.history.replace({
             pathname: '/',
             marcado: 'ok'
@@ -229,6 +252,7 @@ class Agendar extends React.Component {
     render() {
         const {
             dialogAviso,
+            dialogAvisoMensagem,
             dialogServico,
             dialogHorario,
             dialogIdentificacao,
@@ -259,13 +283,30 @@ class Agendar extends React.Component {
                                 </DialogContentText>
                                 {
                                     servicos.map(s => (
-                                        <div id={'div-servico'} key={s.servico}
-                                             onClick={() => this.onClickServico(s)}>
-                                            <FormLabel id={'label-servico'}>{s.servico}</FormLabel>
-                                            <FormLabel id={'label-valor'}>{s.valor.toLocaleString('pt-BR', {
-                                                style: 'currency',
-                                                currency: 'BRL'
-                                            })}</FormLabel>
+                                        <div style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            flexDirection: "row",
+                                            justifyContent: "space-between",
+                                            marginTop: 8
+                                        }}
+                                             key={s.servico}>
+                                            <div id={'div-servico'} style={{flex: 1}}>
+                                                <FormLabel id={'label-servico'}>{s.servico}</FormLabel>
+                                                <FormLabel id={'label-valor'}>{s.valor.toLocaleString('pt-BR', {
+                                                    style: 'currency',
+                                                    currency: 'BRL'
+                                                })}</FormLabel>
+                                            </div>
+                                            <div style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "flex-end",
+                                                flex: 1
+                                            }}>
+                                                <Button variant={'outlined'} color={'secondary'} style={{height: 50}}
+                                                        onClick={() => this.onClickServico(s)}>Selecionar</Button>
+                                            </div>
                                         </div>
                                     ))
                                 }
@@ -401,8 +442,7 @@ class Agendar extends React.Component {
                             <DialogContent>
                                 <DialogContentText style={{fontFamily: 'Nunito', fontSize: 'medium'}}
                                                    color={'white'}>
-                                    Infelizmento não estamos marcando horário para essa data, se possível escolha outro
-                                    dia.
+                                    {dialogAvisoMensagem}
                                 </DialogContentText>
                             </DialogContent>
                             <DialogActions>

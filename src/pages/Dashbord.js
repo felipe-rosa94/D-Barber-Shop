@@ -5,7 +5,8 @@ import {
     Box,
     Button,
     createTheme,
-    Dialog, DialogActions,
+    Dialog,
+    DialogActions,
     DialogContent,
     DialogContentText,
     DialogTitle,
@@ -16,11 +17,19 @@ import {
     RadioGroup,
     Switch,
     TextField,
-    ThemeProvider, Toolbar, Typography
+    ThemeProvider,
+    Toolbar,
+    Typography
 } from '@mui/material'
-import firebase from '../firebase'
-import {Add, ArrowBack, Delete, Edit, RemoveRedEye} from '@mui/icons-material'
+import {
+    Add,
+    ArrowBack,
+    Delete,
+    Edit,
+    RemoveRedEye
+} from '@mui/icons-material'
 import {withStyles} from '@mui/styles'
+import firebase from '../firebase'
 import {liberarTodos, timestamp} from '../util'
 
 const theme = createTheme({
@@ -165,23 +174,21 @@ class Dashbord extends React.Component {
         }
     }
 
-    onClickDeletar = id => {
+    onClickDeletar = id =>
         firebase
             .database()
             .ref('servicos/' + id)
             .remove()
             .then(() => this.buscaServicos())
             .catch(e => console.error(e))
-    }
 
-    onClickDeletarAgenda = agenda => {
+    onClickDeletarAgenda = agenda =>
         firebase
             .database()
             .ref('agenda/' + agenda.dia + '/horarios/' + agenda.id)
             .remove()
             .then(() => this.buscaAgenda())
             .catch(e => console.error(e))
-    }
 
     onClickLogin = () => {
         const {usuario, senha} = this.state
@@ -200,7 +207,7 @@ class Dashbord extends React.Component {
         this.setState({dialogLogin: (login !== 'ok')})
     }
 
-    buscaServicos = () => {
+    buscaServicos = () =>
         firebase
             .database()
             .ref('servicos')
@@ -211,9 +218,8 @@ class Dashbord extends React.Component {
                 else
                     this.setState({servicos: []})
             })
-    }
 
-    buscaDias = () => {
+    buscaDias = () =>
         firebase
             .database()
             .ref('dias')
@@ -222,9 +228,8 @@ class Dashbord extends React.Component {
                 if (callback.val() !== null)
                     this.setState({dias: callback.val()})
             })
-    }
 
-    buscaAgenda = () => {
+    buscaAgenda = () =>
         firebase
             .database()
             .ref('agenda')
@@ -246,7 +251,6 @@ class Dashbord extends React.Component {
                     localStorage.setItem('dbarbershop-agenda', JSON.stringify([]))
                 }
             })
-    }
 
     componentDidMount() {
         this.login()
@@ -570,36 +574,42 @@ class Dashbord extends React.Component {
                                                             justifyContent: 'space-between',
                                                             alignItems: 'center'
                                                         }}>
-                                                        <div>
-                                                            <FormControlLabel
-                                                                key={h.hora}
-                                                                control={<Switch color={'secondary'}
-                                                                                 checked={h.reserva}/>}
-                                                                label={`${h.hora} - ${h.reserva ? 'Reservado' : 'Livre'}`}
-                                                                style={{
-                                                                    color: '#f89e00'
-                                                                }}
-                                                                onChange={(e, checked) => {
-                                                                    h.reserva = checked
-                                                                    h.nome = checked ? 'Administrador' : ''
-                                                                    if (!checked) {
-                                                                        delete h['dia']
-                                                                        delete h['nome']
-                                                                        delete h['servico']
-                                                                        delete h['telefone']
-                                                                    }
-                                                                    this.setState({dias: dias})
-                                                                    this.gravarDias(dias)
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            {
-                                                                h.reserva &&
-                                                                <RemoveRedEye style={{color: 'white'}}
-                                                                              onClick={() => this.onClickVerReserva(h)}/>
-                                                            }
-                                                        </div>
+                                                        {
+                                                            (h.hora !== undefined) &&
+                                                            <div>
+                                                                <FormControlLabel
+                                                                    key={h.hora}
+                                                                    control={<Switch color={'secondary'}
+                                                                                     checked={h.reserva}/>}
+                                                                    label={`${(h.hora === undefined) ? 'Reserva' : h.hora} - ${h.reserva ? 'Reservado' : 'Livre'}`}
+                                                                    style={{
+                                                                        color: '#f89e00'
+                                                                    }}
+                                                                    onChange={(e, checked) => {
+                                                                        h.reserva = checked
+                                                                        h.nome = checked ? 'Administrador' : ''
+                                                                        if (!checked) {
+                                                                            delete h['dia']
+                                                                            delete h['nome']
+                                                                            delete h['servico']
+                                                                            delete h['telefone']
+                                                                        }
+                                                                        this.setState({dias: dias})
+                                                                        this.gravarDias(dias)
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        }
+                                                        {
+                                                            (h.hora !== undefined) &&
+                                                            <div>
+                                                                {
+                                                                    (h.reserva) &&
+                                                                    <RemoveRedEye style={{color: 'white'}}
+                                                                                  onClick={() => this.onClickVerReserva(h)}/>
+                                                                }
+                                                            </div>
+                                                        }
                                                     </div>
                                                 ))
                                             }

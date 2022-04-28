@@ -19,7 +19,7 @@ import logo from '../images/logo.png'
 import firebase from '../firebase'
 import {ArrowBack} from '@mui/icons-material'
 
-const versao = '1.2'
+const versao = '1.3'
 let dashbord = 0
 
 const theme = createTheme({

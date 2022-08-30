@@ -3,7 +3,7 @@ import '../styles/style.css'
 import {
     AppBar,
     Box,
-    Button,
+    Button, Card, CardContent,
     createTheme,
     Dialog,
     DialogActions,
@@ -30,7 +30,9 @@ import {
 } from '@mui/icons-material'
 import {withStyles} from '@mui/styles'
 import firebase from '../firebase'
-import {liberarTodos, timestamp} from '../util'
+import {codigoDia, liberarTodos, timestamp} from '../util'
+import QRCode from 'qrcode.react'
+import moment from "moment";
 
 const theme = createTheme({
     palette: {
@@ -61,6 +63,7 @@ class Dashbord extends React.Component {
         dialogCadastrarServico: false,
         dialogHorariosLiberados: false,
         dialogLiberarHorarios: false,
+        dialogFidelidade: false,
         usuario: '',
         senha: '',
         servicos: [],
@@ -131,11 +134,17 @@ class Dashbord extends React.Component {
             .then(() => console.log)
             .catch(e => console.error(e))
 
-    onClickVerReserva = reserva =>
+    onClickVerReserva = reserva => {
         this.setState({dialogReserva: true, reserva: reserva})
+    }
 
     onClickGravar = () => {
         const {servico, servicos} = this.state
+        if (servico.servico === '' || servico.valor === '') {
+            this.setState({dialogCadastrarServico: false})
+            alert('Serviço ou valor inválido!')
+            return
+        }
         if (servico.id === undefined) {
             servico.id = servicos.length.toString()
             firebase
@@ -174,13 +183,18 @@ class Dashbord extends React.Component {
         }
     }
 
-    onClickDeletar = id =>
+    onClickDeletar = id => {
         firebase
             .database()
             .ref('servicos/' + id)
             .remove()
-            .then(() => this.buscaServicos())
-            .catch(e => console.error(e))
+            .then(() => {
+                this.buscaServicos()
+            })
+            .catch(e => {
+                console.error(e)
+            })
+    }
 
     onClickDeletarAgenda = agenda =>
         firebase
@@ -225,8 +239,7 @@ class Dashbord extends React.Component {
             .ref('dias')
             .once('value')
             .then(callback => {
-                if (callback.val() !== null)
-                    this.setState({dias: callback.val()})
+                if (callback.val() !== null) this.setState({dias: callback.val()})
             })
 
     buscaAgenda = () =>
@@ -269,6 +282,7 @@ class Dashbord extends React.Component {
             dialogLiberarHorarios,
             dialogReserva,
             dialogDias,
+            dialogFidelidade,
             servicos,
             servico,
             reserva,
@@ -305,13 +319,16 @@ class Dashbord extends React.Component {
                             <FormLabel id={'label-botao'}>Liberar todos os horários</FormLabel>
                         </div>
                     </div>
-
                     <div className={'div-container'}>
                         <div id={'div-botao'} onClick={this.onClickLoja}>
-                            <FormLabel id={'label-botao'}>Loja</FormLabel>
+                            <FormLabel id={'label-botao'}>Area do Cliente</FormLabel>
                         </div>
                     </div>
-
+                    <div className={'div-container'}>
+                        <div id={'div-botao'} onClick={() => this.setState({dialogFidelidade: true})}>
+                            <FormLabel id={'label-botao'}>Gerar QR Code Fidelidade</FormLabel>
+                        </div>
+                    </div>
                     <Dialog open={dialogLogin} fullScreen={true}>
                         <div id={'div-dialog-full-screen'}>
                             <DialogTitle style={{fontFamily: 'Nunito', paddingTop: 10}} color={'secondary'}>
@@ -382,6 +399,8 @@ class Dashbord extends React.Component {
                                                     <FormLabel id={'label-valor'}>{a.servico}</FormLabel>
                                                     <FormLabel id={'label-valor'}>{a.hora}</FormLabel>
                                                     <FormLabel id={'label-valor'}>{a.data}</FormLabel>
+                                                    <FormLabel
+                                                        id={'label-valor'}>{`Versão site: ${a.versao}`}</FormLabel>
                                                 </div>
                                                 <div
                                                     style={{
@@ -673,11 +692,48 @@ class Dashbord extends React.Component {
                                         (reserva.servico !== undefined) &&
                                         <FormLabel id={'label-valor'}>{`Serviço: ${reserva.servico}`}</FormLabel>
                                     }
+                                    {
+                                        (reserva.versao !== undefined) &&
+                                        <FormLabel id={'label-valor'}>{`Versão site: ${reserva.versao}`}</FormLabel>
+                                    }
                                 </div>
                             </DialogContent>
                             <DialogActions>
                                 <Button color={'secondary'} variant={'outlined'}
                                         onClick={() => this.setState({dialogReserva: false})}>OK</Button>
+                            </DialogActions>
+                        </div>
+                    </Dialog>
+                    <Dialog open={dialogFidelidade}>
+                        <div id={'div-dialog'}>
+                            <DialogTitle
+                                style={{
+                                    fontFamily: 'Nunito',
+                                    paddingTop: 10
+                                }}
+                                color={'secondary'}>
+                                Qr Code Fidelidade
+                            </DialogTitle>
+                            <DialogContent>
+                                <Card>
+                                    <CardContent style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: 20
+                                    }}>
+                                        <QRCode id="qrcode" value={codigoDia()}/>
+                                    </CardContent>
+                                </Card>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button
+                                    color={'secondary'}
+                                    variant={'outlined'}
+                                    fullWidth={true}
+                                    onClick={() => this.setState({dialogFidelidade: false})}>
+                                    Fechar
+                                </Button>
                             </DialogActions>
                         </div>
                     </Dialog>

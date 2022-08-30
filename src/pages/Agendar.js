@@ -16,15 +16,17 @@ import {
     MenuItem,
     Radio,
     RadioGroup,
-    Select,
+    Select, Snackbar,
     TextField,
     ThemeProvider
 } from '@mui/material'
 import {withStyles} from '@mui/styles'
-import {ArrowBack} from '@mui/icons-material'
+import {ArrowBack, ContentCopy} from '@mui/icons-material'
+import QRCode from 'qrcode.react'
+import {CopyToClipboard} from 'react-copy-to-clipboard'
 import firebase from '../firebase'
-import moment from "moment";
-import {isDebug} from "../util";
+import moment from 'moment'
+import {isDebug, verificaHorarios} from '../util'
 
 const theme = createTheme({
     palette: {
@@ -40,6 +42,8 @@ const theme = createTheme({
     }
 })
 
+const codigo_pix = '00020101021226900014BR.GOV.BCB.PIX2568pix-qr.mercadopago.com/instore/p/v2/0b586c698ba043d89e704fc8dfd4887043530016com.mercadolibre0129https://mpago.la/pos/313292225204000053039865802BR5909UNDEFINED6009SAO PAULO62070503***6304F870'
+
 const CheckButton = withStyles({
     checked: {},
 })(props => <Radio color="secondary" {...props} />)
@@ -47,9 +51,12 @@ const CheckButton = withStyles({
 class Agendar extends React.Component {
 
     state = {
+        openSnackbar: false,
+        snackbar: '',
         dialogServico: true,
         dialogAgendado: false,
         dialogHorario: false,
+        dialogPix: false,
         dialogIdentificacao: false,
         dialogAviso: false,
         dialogAvisoMensagem: '',
@@ -105,33 +112,51 @@ class Agendar extends React.Component {
             } else {
                 let a = !horarios[(horarios.length === index + 1) ? horarios.length - 1 : index + 1].reserva
                 let b = !h.reserva
-                if ((a && b)) horariosLivres.push(h)
+                if (h.hora !== '20:30h') {
+                    if ((a && b)) {
+                        horariosLivres.push(h)
+                    }
+                }
             }
         })
         return horariosLivres
     }
 
-    onClickHorario = horario => {
-        const {dias, dia} = this.state
-        let dataSelecionada = this.converterStringEmData(horario.hora.replace('h', ''))
-        if ((new Date().getDay() === dia) && (new Date() > dataSelecionada)) return this.setState({
-            dialogAviso: true,
-            dialogAvisoMensagem: 'Você está tentanto marcar um horário inferior ao atual.'
-        })
-        let ativo = true
-        for (let i = 0; i < dias.length; i++) {
-            if (dia === dias[i].dia && !dias[i].ativado) {
-                ativo = false
-                break
-            }
-        }
-        if (ativo)
-            this.setState({horario: horario, hora: horario.hora, dialogHorario: false, dialogIdentificacao: true})
-        else
-            this.setState({
+    onClickHorario = async horario => {
+        try {
+            const {dias, dia} = this.state
+            let dataSelecionada = this.converterStringEmData(horario.hora.replace('h', ''))
+            if ((new Date().getDay() === dia) && (new Date() > dataSelecionada)) return this.setState({
                 dialogAviso: true,
-                dialogAvisoMensagem: 'Infelizmento não estamos marcando horário para essa data, se possível escolha outro dia.'
+                dialogAvisoMensagem: 'Você está tentanto marcar um horário inferior ao atual.'
             })
+            let ativo = true
+            for (let i = 0; i < dias.length; i++) {
+                if (dia === dias[i].dia && !dias[i].ativado) {
+                    ativo = false
+                    break
+                }
+            }
+            try {
+                const {reserva} = await verificaHorarios(dia, horario.id)
+                if (reserva) {
+                    alert('Demorou mano! alguém já marcou esse horário, selecione outro horário')
+                    window.location.reload()
+                    return
+                }
+            } catch (e) {
+
+            }
+            if (ativo)
+                this.setState({horario: horario, hora: horario.hora, dialogHorario: false, dialogIdentificacao: true})
+            else
+                this.setState({
+                    dialogAviso: true,
+                    dialogAvisoMensagem: 'Infelizmento não estamos marcando horário para essa data, se possível escolha outro dia.'
+                })
+        } catch (e) {
+            alert(e.message)
+        }
     }
 
     converterStringEmData = hora => {
@@ -140,15 +165,31 @@ class Agendar extends React.Component {
         return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), hora[0], hora[1])
     }
 
-    onClickAgendar = () => {
+    onClickAgendar = async () => {
         const {nome, telefone, horario, servico, dia, hora} = this.state
-        if (nome === '') return alert('Nome inválido')
+        if (nome === '') {
+            this.setState({dialogAgendado: false})
+            alert('Nome inválido')
+            return
+        }
         horario.reserva = true
         horario.nome = nome
         horario.telefone = telefone
         horario.servico = servico.servico
         horario.hora = hora
         horario.dia = this.diasSemana(dia)
+        horario.versao = process.env.REACT_APP_VERSAO
+        horario[new Date().getTime()] = `${horario.nome} - ${moment().format('DD/MM/YYYY HH:MM:SS')}`
+        try {
+            const {reserva} = await verificaHorarios(dia, horario.id)
+            if (reserva) {
+                alert('Demorou mano! alguém já marcou esse horário, selecione outro horário')
+                window.location.reload()
+                return
+            }
+        } catch (e) {
+
+        }
         let agenda = {
             nome: nome,
             telefone: telefone,
@@ -156,7 +197,8 @@ class Agendar extends React.Component {
             hora: hora,
             dia: dia,
             data: moment().format('DD/MM/YYYY'),
-            id: new Date().getTime()
+            id: new Date().getTime(),
+            versao: process.env.REACT_APP_VERSAO
         }
         if (servico.qtdHorarios === 1) {
             this.gravaHorario(dia, horario)
@@ -167,7 +209,9 @@ class Agendar extends React.Component {
                 id: (horario.id + 1),
                 nome: horario.nome,
                 telefone: horario.telefone,
-                reserva: true
+                reserva: true,
+                versao: process.env.REACT_APP_VERSAO,
+                [new Date().getTime()]: `${horario.nome} - ${moment().format('DD/MM/YYYY HH:MM:SS')}`
             })
             this.gravaAgenda(dia, agenda)
         }
@@ -230,11 +274,24 @@ class Agendar extends React.Component {
         this.setState({servicos: (servicos !== null) ? JSON.parse(servicos) : []})
     }
 
-    dias = () => {
-        let dias = sessionStorage.getItem('dbarbershop-dias')
-        this.setState({dias: (dias !== null) ? JSON.parse(dias) : []})
-        dias = (dias !== null) ? JSON.parse(dias) : []
-        this.setState({horariosLivres: dias[new Date().getDay()].horarios})
+    buscaDias = () => {
+        firebase
+            .database()
+            .ref('dias')
+            .on('value', callback => {
+                let dias = callback.val()
+                if (dias !== null) {
+                    this.setState({
+                        dias: dias,
+                        horariosLivres: dias[new Date().getDay()].horarios
+                    })
+                } else {
+                    this.setState({
+                        dias: [],
+                        horariosLivres: []
+                    })
+                }
+            })
     }
 
     identificacao = () => {
@@ -244,7 +301,7 @@ class Agendar extends React.Component {
     }
 
     componentDidMount() {
-        this.dias()
+        this.buscaDias()
         this.servicos()
         this.identificacao()
     }
@@ -257,13 +314,16 @@ class Agendar extends React.Component {
             dialogHorario,
             dialogIdentificacao,
             dialogAgendado,
+            dialogPix,
             servicos,
             horariosLivres,
             dias,
             dia,
             hora,
             nome,
-            telefone
+            telefone,
+            openSnackbar,
+            snackbar,
         } = this.state
         return (
             <div id={'agendar'}>
@@ -412,8 +472,17 @@ class Agendar extends React.Component {
                                     fullWidth={true}
                                     onChange={this.handleInput}/>
                                 <Box p={1}/>
-                                <div id={'div-botao'} onClick={() => this.setState({dialogAgendado: true})}>
-                                    <FormLabel id={'label-botao'}>Marcar Horário</FormLabel>
+                                <div className={'div-container'}>
+                                    <div id={'div-botao'} onClick={() => {
+                                        this.setState({dialogAgendado: true})
+                                    }}>
+                                        <FormLabel id={'label-botao'}>Marcar Horário</FormLabel>
+                                    </div>
+                                </div>
+                                <div className={'div-container'}>
+                                    <div id={'div-botao'} onClick={() => this.setState({dialogPix: true})}>
+                                        <FormLabel id={'label-botao'}>Pagar com PIX</FormLabel>
+                                    </div>
                                 </div>
                             </DialogContent>
                         </div>
@@ -451,6 +520,49 @@ class Agendar extends React.Component {
                             </DialogActions>
                         </div>
                     </Dialog>
+                    <Dialog open={dialogPix} onClose={() => this.setState({dialogPix: false})}>
+                        <div id={'div-dialog'}>
+                            <DialogTitle
+                                style={{fontFamily: 'Nunito', paddingTop: 10}}
+                                color={'secondary'}>Pagar com PIX</DialogTitle>
+                            <DialogContent style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                                <DialogContentText
+                                    style={{fontFamily: 'Nunito', fontSize: 'medium'}}
+                                    color={'white'}>
+                                    Faça a leitura do Qr Code, ou copie o código PIX. Em seu banco confira as
+                                    informações do recebedor e insira o valor que
+                                    deseja pagar. Após pagar envie o comprovante de pagamento!
+                                </DialogContentText>
+                                <Box p={1}/>
+                                <div style={{padding: 10, backgroundColor: 'white', borderRadius: 8}}>
+                                    <QRCode id={'qr-code-pix'} value={codigo_pix}/>
+                                </div>
+                                <div className={'div-container'}>
+                                    <div id={'div-botao'} onClick={() => this.setState({dialogPix: false})}>
+                                        <ContentCopy/>
+                                        <CopyToClipboard
+                                            text={codigo_pix}
+                                            onCopy={() => this.setState({
+                                                openSnackbar: true,
+                                                snackbar: 'Código PIX copiado !'
+                                            })}>
+                                            <span style={{
+                                                color: '#ffffff',
+                                                margin: 4
+                                            }}>Copiar PIX</span>
+                                        </CopyToClipboard>
+                                    </div>
+                                </div>
+                            </DialogContent>
+                        </div>
+                    </Dialog>
+                    <Snackbar
+                        anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                        open={openSnackbar}
+                        autoHideDuration={700}
+                        onClose={() => this.setState({openSnackbar: false})}
+                        message={snackbar}
+                    />
                 </ThemeProvider>
             </div>
         )

@@ -18,8 +18,8 @@ import {
 import logo from '../images/logo.png'
 import firebase from '../firebase'
 import {ArrowBack} from '@mui/icons-material'
+import moment from "moment";
 
-const versao = '1.3'
 let dashbord = 0
 
 const theme = createTheme({
@@ -72,20 +72,14 @@ class Home extends React.Component {
             .once('value')
             .then(callback => {
                 if (callback.val() !== null) {
-                    this.setState({servicos: callback.val()})
-                    sessionStorage.setItem('dbarbershop-servico', JSON.stringify(callback.val()))
+                    const servicos = callback.val().sort((a, b) => {
+                        if (a.servico > b.servico) return 1
+                        if (a.servico < b.servico) return -1
+                        return 0
+                    })
+                    this.setState({servicos: servicos})
+                    sessionStorage.setItem('dbarbershop-servico', JSON.stringify(servicos))
                 }
-            })
-    }
-
-    buscaDias = () => {
-        firebase
-            .database()
-            .ref('dias')
-            .once('value')
-            .then(callback => {
-                if (callback.val() !== null)
-                    sessionStorage.setItem('dbarbershop-dias', JSON.stringify(callback.val()))
             })
     }
 
@@ -95,11 +89,14 @@ class Home extends React.Component {
         this.setState({historico: historico})
     }
 
+    dataAlteracao = () => {
+        return moment().format('DD/MM/YYYY')
+    }
+
     componentDidMount() {
         this.logo()
         this.servicos()
         this.buscaServicos()
-        this.buscaDias()
         this.meusHorarios()
     }
 
@@ -148,6 +145,11 @@ class Home extends React.Component {
                                     <FormLabel id={'label-botao'}>Meus Horários</FormLabel>
                                 </div>
                             </div>
+                            <div className={'div-container'}>
+                                <div id={'div-botao'} onClick={() => this.props.history.push('/fidelidade')}>
+                                    <FormLabel id={'label-botao'}>Fidelidade</FormLabel>
+                                </div>
+                            </div>
                             <Box p={1}/>
                             <div style={{
                                 display: "flex",
@@ -155,8 +157,9 @@ class Home extends React.Component {
                                 justifyContent: "center"
                             }}>
                                 <FormLabel id={'label-versao'}
-                                           onClick={this.onClickDashbord}>{`Versão: ${versao}`}</FormLabel>
+                                           onClick={this.onClickDashbord}>{`Versão: ${process.env.REACT_APP_VERSAO}`}</FormLabel>
                             </div>
+                            <div id={this.dataAlteracao()}/>
                         </div>
                     </div>
                     <Dialog open={dialogLogo} fullScreen={true}>

@@ -18,7 +18,7 @@ import {
 import logo from '../images/logo.png'
 import firebase from '../firebase'
 import {ArrowBack} from '@mui/icons-material'
-import moment from "moment";
+import moment from 'moment'
 
 let dashbord = 0
 

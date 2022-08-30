@@ -3,7 +3,9 @@ import '../styles/style.css'
 import {
     AppBar,
     Box,
-    Button, Card, CardContent,
+    Button,
+    Card,
+    CardContent,
     createTheme,
     Dialog,
     DialogActions,
@@ -32,7 +34,6 @@ import {withStyles} from '@mui/styles'
 import firebase from '../firebase'
 import {codigoDia, liberarTodos, timestamp} from '../util'
 import QRCode from 'qrcode.react'
-import moment from "moment";
 
 const theme = createTheme({
     palette: {

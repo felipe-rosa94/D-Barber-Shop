@@ -30,7 +30,6 @@ export default function Scan(props) {
     return (
         <ThemeProvider theme={theme}>
             <div id={'scan'}>
-
                 <div id={'div-scan'}>
                     <div id={'div-QrReader'}>
                         <QrReader

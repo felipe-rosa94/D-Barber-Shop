@@ -182,20 +182,25 @@ class Dashbord extends React.Component {
                 })
                 .catch(e => console.error(e))
         }
+        this.setState({
+            servicos: servicos.sort((a, b) => {
+                if (a.servico > b.servico) return 1
+                if (a.servico < b.servico) return -1
+                return 0
+            })
+        })
     }
 
-    onClickDeletar = id => {
-        firebase
-            .database()
-            .ref('servicos/' + id)
-            .remove()
-            .then(() => {
-                this.buscaServicos()
-            })
-            .catch(e => {
-                console.error(e)
-            })
-    }
+    onClickDeletar = id => firebase
+        .database()
+        .ref('servicos/' + id)
+        .remove()
+        .then(() => {
+            this.buscaServicos()
+        })
+        .catch(e => {
+            console.error(e)
+        })
 
     onClickDeletarAgenda = agenda =>
         firebase
@@ -209,7 +214,7 @@ class Dashbord extends React.Component {
         const {usuario, senha} = this.state
         firebase
             .auth()
-            .signInWithEmailAndPassword(usuario, senha)
+            .signInWithEmailAndPassword(usuario.toLowerCase(), senha)
             .then((data) => {
                 localStorage.setItem('dbarbershop-login', 'ok')
                 this.setState({dialogLogin: false})
@@ -228,10 +233,17 @@ class Dashbord extends React.Component {
             .ref('servicos')
             .once('value')
             .then(callback => {
-                if (callback.val() !== null)
-                    this.setState({servicos: callback.val()})
-                else
+                let servicos = callback.val()
+                if (servicos !== null) {
+                    servicos = servicos.sort((a, b) => {
+                        if (a.servico > b.servico) return 1
+                        if (a.servico < b.servico) return -1
+                        return 0
+                    })
+                    this.setState({servicos: servicos})
+                } else {
                     this.setState({servicos: []})
+                }
             })
 
     buscaDias = () =>

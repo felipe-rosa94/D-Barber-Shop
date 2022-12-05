@@ -808,7 +808,7 @@ const timestamp = () => {
 }
 
 const codigoDia = () => {
-    return '00' + (parseInt(moment().format('MMYYYY')) * parseInt(moment().format('DD')) * 135).toString()
+    return '00' + (parseInt(moment().format('MMYYYY')) * parseInt(moment().format('DDHH')) * 135).toString()
 }
 
 const mobile = () => {

@@ -1,4 +1,5 @@
 import React from 'react'
+import '../styles/style.css'
 import {ArrowBack} from '@mui/icons-material'
 import {Box, CardMedia, createTheme, FormLabel, ThemeProvider} from '@mui/material'
 import logo from '../images/logo.png'
@@ -36,6 +37,8 @@ class Fidelidade extends React.Component {
                 fidelidade.push(codigo)
             }
             sessionStorage.removeItem('dbarbershop-codigo')
+        } else {
+            codigo && alert('QR Code inválido!\n Verifique se os horários dos celulares, precisam estar iguais!')
         }
         localStorage.setItem('dbarbershop-fidelidade', JSON.stringify(fidelidade))
         this.setState({fidelidade: fidelidade})
@@ -134,6 +137,12 @@ class Fidelidade extends React.Component {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div id={'div-fidelidade'}>
+                        <FormLabel id={'form-label-aviso-fidelidade'}>
+                            Esse cartão fidelidade não é acumulativo, por isso ao completar o cartão use o seu
+                            benefício.
+                        </FormLabel>
                     </div>
                 </ThemeProvider>
             </div>

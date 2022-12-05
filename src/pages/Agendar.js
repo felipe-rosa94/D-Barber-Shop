@@ -224,8 +224,7 @@ class Agendar extends React.Component {
         this.setState({dialogAgendado: true})
         let mensagem = `Bom dia é o *${nome}*.\nMarquei um horário ${(dia === new Date().getDay()) ? 'hoje' : this.diasSemana(dia)}, às ${hora} para fazer *${servico.servico}.*\n\nMeu telefone pra contato: *${telefone}*`
         mensagem = window.encodeURIComponent(mensagem)
-        if (!isDebug())
-            window.open(`https://api.whatsapp.com/send?phone=5551${isDebug() ? '993031434' : '984266928'}&text=${mensagem}`, '_blank')
+        window.location.assign(`https://api.whatsapp.com/send?phone=5551984266928&text=${mensagem}`)
         this.props.history.replace({
             pathname: '/',
             marcado: 'ok'
@@ -364,8 +363,13 @@ class Agendar extends React.Component {
                                                 justifyContent: "flex-end",
                                                 flex: 1
                                             }}>
-                                                <Button variant={'outlined'} color={'secondary'} style={{height: 50}}
-                                                        onClick={() => this.onClickServico(s)}>Selecionar</Button>
+                                                <Button
+                                                    variant={'outlined'}
+                                                    color={'secondary'}
+                                                    style={{height: 50}}
+                                                    onClick={() => this.onClickServico(s)}>
+                                                    Selecionar
+                                                </Button>
                                             </div>
                                         </div>
                                     ))
@@ -402,9 +406,15 @@ class Agendar extends React.Component {
                                         onChange={this.handleChange}
                                     >
                                         {
-                                            dias.map(d => (
-                                                <MenuItem key={d.dia} value={d.dia}>{d.nome}</MenuItem>
-                                            ))
+                                            // eslint-disable-next-line array-callback-return
+                                            dias.map(d => {
+                                                const dia = new Date().getDay()
+                                                if (d.dia >= dia) {
+                                                    return (
+                                                        <MenuItem key={d.dia} value={d.dia}>{d.nome}</MenuItem>
+                                                    )
+                                                }
+                                            })
                                         }
                                     </Select>
                                 </FormControl>

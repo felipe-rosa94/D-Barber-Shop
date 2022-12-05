@@ -1,6 +1,6 @@
 {
   "name": "diegobarbershop",
-  "version": "0.1.0",
+  "version": "0.1.13",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.8.2",

@@ -14,7 +14,7 @@ import {
 import firebase from '../firebase'
 import {ArrowBack} from '@mui/icons-material'
 import Lottie from 'react-lottie'
-import loading from "../images/loading.json";
+import loading from '../images/loading.json'
 
 const theme = createTheme({
     palette: {

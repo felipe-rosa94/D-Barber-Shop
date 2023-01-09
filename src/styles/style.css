@@ -14,14 +14,15 @@
 }
 
 #card-media-logo {
-    width: 300px;
-    height: 300px;
-    border-radius: 150px;
+    width: 200px;
+    height: 200px;
+    border-radius: 100px;
 }
 
 .div-container {
     display: flex;
     flex: 1;
+    align-items: center;
     justify-content: center;
     flex-direction: column;
     margin-top: 15px;
@@ -64,6 +65,7 @@
     align-items: center;
     justify-content: center;
     padding: 15px;
+    width: 90%;
     background: #f89e00;
     border-radius: 50px;
     margin-top: 10px;
@@ -190,4 +192,82 @@
 #form-label-aviso-fidelidade {
     text-align: center;
     color: #f89e00;
+}
+
+#card-media-barbeiro {
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+}
+
+#div-barbeiro {
+    padding: 4px;
+    border: 2px solid #f89e00;
+    border-radius: 35px;
+}
+
+#dialog-content-loading {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #191919;
+
+}
+
+#dialog-content-text-loading {
+    color: #f89e00;
+    font-family: 'Nunito', sans-serif;
+    font-size: large;
+}
+
+#div-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+}
+
+#div-titulo-pagina {
+    padding: 10px 24px 16px;
+}
+
+#form-label-relatorio {
+    color: #f89e00;
+    font-family: 'Nunito', sans-serif;
+    font-size: large;
+}
+
+#div-container-relatorios {
+   padding: 0 24px 20px;
+}
+
+#form-label-total-semana {
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: large;
+}
+
+#div-totais-relatorios {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#divider-total {
+    background-color: #f89e00;
+}
+
+#div-aviso-ralatorio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#form-label-aviso-relatorio {
+    text-align: center;
+    font-size: small;
+    color: #f89e00;
+    font-family: 'Nunito', sans-serif;
 }

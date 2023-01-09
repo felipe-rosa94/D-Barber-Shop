@@ -1,4 +1,4 @@
-import moment from "moment/moment";
+import moment from "moment/moment"
 
 const liberarTodos = [
     {
@@ -787,6 +787,913 @@ const liberarTodos = [
     }
 ]
 
+const liberarTodosNatal = [
+    {
+        "ativado": false,
+        "dia": 0,
+        "horarios": [
+            {
+                "id": 0,
+                "hora": "09:00h",
+                "reserva": true
+            },
+            {
+                "id": 1,
+                "hora": "09:35h",
+                "reserva": true
+            },
+            {
+                "id": 2,
+                "hora": "10:10h",
+                "reserva": true
+            },
+            {
+                "id": 3,
+                "hora": "10:45h",
+                "reserva": true
+            },
+            {
+                "id": 4,
+                "hora": "11:20h",
+                "reserva": true
+            },
+            {
+                "id": 5,
+                "hora": "13:00h",
+                "reserva": true
+            },
+            {
+                "id": 6,
+                "hora": "13:35h",
+                "reserva": true
+            },
+            {
+                "id": 7,
+                "hora": "14:10h",
+                "reserva": true
+            },
+            {
+                "id": 8,
+                "hora": "14:45h",
+                "reserva": true
+            },
+            {
+                "id": 9,
+                "hora": "15:20h",
+                "reserva": true
+            },
+            {
+                "id": 10,
+                "hora": "15:55h",
+                "reserva": true
+            },
+            {
+                "id": 11,
+                "hora": "16:30h",
+                "reserva": true
+            },
+            {
+                "id": 12,
+                "hora": "17:05h",
+                "reserva": true
+            },
+            {
+                "id": 13,
+                "hora": "17:40h",
+                "reserva": true
+            },
+            {
+                "id": 14,
+                "hora": "18:15h",
+                "reserva": true
+            },
+            {
+                "id": 15,
+                "hora": "18:50h",
+                "reserva": true
+            },
+            {
+                "id": 16,
+                "hora": "19:25h",
+                "reserva": true
+            },
+            {
+                "id": 17,
+                "hora": "20:00h",
+                "reserva": true
+            },
+            {
+                "id": 18,
+                "hora": "20:35h",
+                "reserva": true
+            },
+            {
+                "id": 19,
+                "hora": "21:10h",
+                "reserva": true
+            },
+            {
+                "id": 20,
+                "hora": "00:00h",
+                "reserva": true
+            }
+        ],
+        "nome": "Domingo"
+    },
+    {
+        "ativado": true,
+        "dia": 1,
+        "horarios": [
+            {
+                "id": 0,
+                "hora": "09:00h",
+                "reserva": false
+            },
+            {
+                "id": 1,
+                "hora": "09:35h",
+                "reserva": false
+            },
+            {
+                "id": 2,
+                "hora": "10:10h",
+                "reserva": false
+            },
+            {
+                "id": 3,
+                "hora": "10:45h",
+                "reserva": false
+            },
+            {
+                "id": 4,
+                "hora": "11:20h",
+                "reserva": false
+            },
+            {
+                "id": 5,
+                "hora": "13:00h",
+                "reserva": true
+            },
+            {
+                "id": 6,
+                "hora": "13:35h",
+                "reserva": true
+            },
+            {
+                "id": 7,
+                "hora": "14:10h",
+                "reserva": false
+            },
+            {
+                "id": 8,
+                "hora": "14:45h",
+                "reserva": false
+            },
+            {
+                "id": 9,
+                "hora": "15:20h",
+                "reserva": false
+            },
+            {
+                "id": 10,
+                "hora": "15:55h",
+                "reserva": false
+            },
+            {
+                "id": 11,
+                "hora": "16:30h",
+                "reserva": false
+            },
+            {
+                "id": 12,
+                "hora": "17:05h",
+                "reserva": false
+            },
+            {
+                "id": 13,
+                "hora": "17:40h",
+                "reserva": false
+            },
+            {
+                "id": 14,
+                "hora": "18:15h",
+                "reserva": false
+            },
+            {
+                "id": 15,
+                "hora": "18:50h",
+                "reserva": false
+            },
+            {
+                "id": 16,
+                "hora": "19:25h",
+                "reserva": false
+            },
+            {
+                "id": 17,
+                "hora": "20:00h",
+                "reserva": false
+            },
+            {
+                "id": 18,
+                "hora": "20:35h",
+                "reserva": false
+            },
+            {
+                "id": 19,
+                "hora": "21:10h",
+                "reserva": false
+            },
+            {
+                "id": 20,
+                "hora": "00:00h",
+                "reserva": true
+            }
+        ],
+        "nome": "Segunda"
+    },
+    {
+        "ativado": true,
+        "dia": 2,
+        "horarios": [
+            {
+                "id": 0,
+                "hora": "09:00h",
+                "reserva": false
+            },
+            {
+                "id": 1,
+                "hora": "09:35h",
+                "reserva": false
+            },
+            {
+                "id": 2,
+                "hora": "10:10h",
+                "reserva": false
+            },
+            {
+                "id": 3,
+                "hora": "10:45h",
+                "reserva": false
+            },
+            {
+                "id": 4,
+                "hora": "11:20h",
+                "reserva": false
+            },
+            {
+                "id": 5,
+                "hora": "13:00h",
+                "reserva": true
+            },
+            {
+                "id": 6,
+                "hora": "13:35h",
+                "reserva": true
+            },
+            {
+                "id": 7,
+                "hora": "14:10h",
+                "reserva": false
+            },
+            {
+                "id": 8,
+                "hora": "14:45h",
+                "reserva": false
+            },
+            {
+                "id": 9,
+                "hora": "15:20h",
+                "reserva": false
+            },
+            {
+                "id": 10,
+                "hora": "15:55h",
+                "reserva": false
+            },
+            {
+                "id": 11,
+                "hora": "16:30h",
+                "reserva": false
+            },
+            {
+                "id": 12,
+                "hora": "17:05h",
+                "reserva": false
+            },
+            {
+                "id": 13,
+                "hora": "17:40h",
+                "reserva": false
+            },
+            {
+                "id": 14,
+                "hora": "18:15h",
+                "reserva": false
+            },
+            {
+                "id": 15,
+                "hora": "18:50h",
+                "reserva": false
+            },
+            {
+                "id": 16,
+                "hora": "19:25h",
+                "reserva": false
+            },
+            {
+                "id": 17,
+                "hora": "20:00h",
+                "reserva": false
+            },
+            {
+                "id": 18,
+                "hora": "20:35h",
+                "reserva": false
+            },
+            {
+                "id": 19,
+                "hora": "21:10h",
+                "reserva": false
+            },
+            {
+                "id": 20,
+                "hora": "00:00h",
+                "reserva": true
+            }
+        ],
+        "nome": "Terça"
+    },
+    {
+        "ativado": true,
+        "dia": 3,
+        "horarios": [
+            {
+                "id": 0,
+                "hora": "09:00h",
+                "reserva": false
+            },
+            {
+                "id": 1,
+                "hora": "09:35h",
+                "reserva": false
+            },
+            {
+                "id": 2,
+                "hora": "10:10h",
+                "reserva": false
+            },
+            {
+                "id": 3,
+                "hora": "10:45h",
+                "reserva": false
+            },
+            {
+                "id": 4,
+                "hora": "11:20h",
+                "reserva": false
+            },
+            {
+                "id": 5,
+                "hora": "13:00h",
+                "reserva": true
+            },
+            {
+                "id": 6,
+                "hora": "13:35h",
+                "reserva": true
+            },
+            {
+                "id": 7,
+                "hora": "14:10h",
+                "reserva": false
+            },
+            {
+                "id": 8,
+                "hora": "14:45h",
+                "reserva": false
+            },
+            {
+                "id": 9,
+                "hora": "15:20h",
+                "reserva": false
+            },
+            {
+                "id": 10,
+                "hora": "15:55h",
+                "reserva": false
+            },
+            {
+                "id": 11,
+                "hora": "16:30h",
+                "reserva": false
+            },
+            {
+                "id": 12,
+                "hora": "17:05h",
+                "reserva": false
+            },
+            {
+                "id": 13,
+                "hora": "17:40h",
+                "reserva": false
+            },
+            {
+                "id": 14,
+                "hora": "18:15h",
+                "reserva": false
+            },
+            {
+                "id": 15,
+                "hora": "18:50h",
+                "reserva": false
+            },
+            {
+                "id": 16,
+                "hora": "19:25h",
+                "reserva": false
+            },
+            {
+                "id": 17,
+                "hora": "20:00h",
+                "reserva": false
+            },
+            {
+                "id": 18,
+                "hora": "20:35h",
+                "reserva": false
+            },
+            {
+                "id": 19,
+                "hora": "21:10h",
+                "reserva": false
+            },
+            {
+                "id": 20,
+                "hora": "00:00h",
+                "reserva": true
+            }
+        ],
+        "nome": "Quarta"
+    },
+    {
+        "ativado": true,
+        "dia": 4,
+        "horarios": [
+            {
+                "id": 0,
+                "hora": "07:00h",
+                "reserva": false
+            },
+            {
+                "id": 1,
+                "hora": "07:25h",
+                "reserva": false
+            },
+            {
+                "id": 2,
+                "hora": "07:50h",
+                "reserva": false
+            },
+            {
+                "id": 3,
+                "hora": "08:15h",
+                "reserva": false
+            },
+            {
+                "id": 4,
+                "hora": "08:40h",
+                "reserva": false
+            },
+            {
+                "id": 5,
+                "hora": "09:05h",
+                "reserva": false
+            },
+            {
+                "id": 6,
+                "hora": "09:30h",
+                "reserva": false
+            },
+            {
+                "id": 7,
+                "hora": "09:55h",
+                "reserva": false
+            },
+            {
+                "id": 8,
+                "hora": "10:20h",
+                "reserva": false
+            },
+            {
+                "id": 9,
+                "hora": "10:45h",
+                "reserva": false
+            },
+            {
+                "id": 10,
+                "hora": "11:10h",
+                "reserva": false
+            },
+            {
+                "id": 11,
+                "hora": "11:35h",
+                "reserva": false
+            },
+            {
+                "id": 12,
+                "hora": "12:00h",
+                "reserva": false
+            },
+            {
+                "id": 13,
+                "hora": "12:25h",
+                "reserva": false
+            },
+            {
+                "id": 14,
+                "hora": "12:50h",
+                "reserva": false
+            },
+            {
+                "id": 15,
+                "hora": "13:15h",
+                "reserva": false
+            },
+            {
+                "id": 16,
+                "hora": "13:40h",
+                "reserva": false
+            },
+            {
+                "id": 17,
+                "hora": "14:05h",
+                "reserva": false
+            },
+            {
+                "id": 18,
+                "hora": "14:30h",
+                "reserva": false
+            },
+            {
+                "id": 19,
+                "hora": "14:55h",
+                "reserva": false
+            },
+            {
+                "id": 20,
+                "hora": "15:20h",
+                "reserva": false
+            },
+            {
+                "id": 21,
+                "hora": "15:45h",
+                "reserva": false
+            },
+            {
+                "id": 22,
+                "hora": "16:10h",
+                "reserva": false
+            },
+            {
+                "id": 23,
+                "hora": "16:35h",
+                "reserva": false
+            },
+            {
+                "id": 24,
+                "hora": "17:00h",
+                "reserva": false
+            },
+            {
+                "id": 25,
+                "hora": "17:25h",
+                "reserva": false
+            },
+            {
+                "id": 26,
+                "hora": "17:50h",
+                "reserva": false
+            },
+            {
+                "id": 27,
+                "hora": "18:15h",
+                "reserva": false
+            },
+            {
+                "id": 28,
+                "hora": "18:40h",
+                "reserva": false
+            },
+            {
+                "id": 29,
+                "hora": "19:05h",
+                "reserva": false
+            },
+            {
+                "id": 30,
+                "hora": "19:30h",
+                "reserva": false
+            },
+            {
+                "id": 31,
+                "hora": "19:55h",
+                "reserva": false
+            },
+            {
+                "id": 32,
+                "hora": "20:20h",
+                "reserva": false
+            },
+            {
+                "id": 33,
+                "hora": "20:45h",
+                "reserva": false
+            }
+        ],
+        "nome": "Quinta"
+    },
+    {
+        "ativado": true,
+        "dia": 5,
+        "horarios": [
+            {
+                "id": 0,
+                "hora": "07:00h",
+                "reserva": false
+            },
+            {
+                "id": 1,
+                "hora": "07:25h",
+                "reserva": false
+            },
+            {
+                "id": 2,
+                "hora": "07:50h",
+                "reserva": false
+            },
+            {
+                "id": 3,
+                "hora": "08:15h",
+                "reserva": false
+            },
+            {
+                "id": 4,
+                "hora": "08:40h",
+                "reserva": false
+            },
+            {
+                "id": 5,
+                "hora": "09:05h",
+                "reserva": false
+            },
+            {
+                "id": 6,
+                "hora": "09:30h",
+                "reserva": false
+            },
+            {
+                "id": 7,
+                "hora": "09:55h",
+                "reserva": false
+            },
+            {
+                "id": 8,
+                "hora": "10:20h",
+                "reserva": false
+            },
+            {
+                "id": 9,
+                "hora": "10:45h",
+                "reserva": false
+            },
+            {
+                "id": 10,
+                "hora": "11:10h",
+                "reserva": false
+            },
+            {
+                "id": 11,
+                "hora": "11:35h",
+                "reserva": false
+            },
+            {
+                "id": 12,
+                "hora": "12:00h",
+                "reserva": false
+            },
+            {
+                "id": 13,
+                "hora": "12:25h",
+                "reserva": false
+            },
+            {
+                "id": 14,
+                "hora": "12:50h",
+                "reserva": false
+            },
+            {
+                "id": 15,
+                "hora": "13:15h",
+                "reserva": false
+            },
+            {
+                "id": 16,
+                "hora": "13:40h",
+                "reserva": false
+            },
+            {
+                "id": 17,
+                "hora": "14:05h",
+                "reserva": false
+            },
+            {
+                "id": 18,
+                "hora": "14:30h",
+                "reserva": false
+            },
+            {
+                "id": 19,
+                "hora": "14:55h",
+                "reserva": false
+            },
+            {
+                "id": 20,
+                "hora": "15:20h",
+                "reserva": false
+            },
+            {
+                "id": 21,
+                "hora": "15:45h",
+                "reserva": false
+            },
+            {
+                "id": 22,
+                "hora": "16:10h",
+                "reserva": false
+            },
+            {
+                "id": 23,
+                "hora": "16:35h",
+                "reserva": false
+            },
+            {
+                "id": 24,
+                "hora": "17:00h",
+                "reserva": false
+            },
+            {
+                "id": 25,
+                "hora": "17:25h",
+                "reserva": false
+            },
+            {
+                "id": 26,
+                "hora": "17:50h",
+                "reserva": false
+            },
+            {
+                "id": 27,
+                "hora": "18:15h",
+                "reserva": false
+            },
+            {
+                "id": 28,
+                "hora": "18:40h",
+                "reserva": false
+            },
+            {
+                "id": 29,
+                "hora": "19:05h",
+                "reserva": false
+            },
+            {
+                "id": 30,
+                "hora": "19:30h",
+                "reserva": false
+            },
+            {
+                "id": 31,
+                "hora": "19:55h",
+                "reserva": false
+            }
+        ],
+        "nome": "Sexta"
+    },
+    {
+        "ativado": false,
+        "dia": 6,
+        "horarios": [
+            {
+                "id": 0,
+                "hora": "09:00h",
+                "reserva": true
+            },
+            {
+                "id": 1,
+                "hora": "09:35h",
+                "reserva": true
+            },
+            {
+                "id": 2,
+                "hora": "10:10h",
+                "reserva": true
+            },
+            {
+                "id": 3,
+                "hora": "10:45h",
+                "reserva": true
+            },
+            {
+                "id": 4,
+                "hora": "11:20h",
+                "reserva": true
+            },
+            {
+                "id": 5,
+                "hora": "13:00h",
+                "reserva": true
+            },
+            {
+                "id": 6,
+                "hora": "13:35h",
+                "reserva": true
+            },
+            {
+                "id": 7,
+                "hora": "14:10h",
+                "reserva": true
+            },
+            {
+                "id": 8,
+                "hora": "14:45h",
+                "reserva": true
+            },
+            {
+                "id": 9,
+                "hora": "15:20h",
+                "reserva": true
+            },
+            {
+                "id": 10,
+                "hora": "15:55h",
+                "reserva": true
+            },
+            {
+                "id": 11,
+                "hora": "16:30h",
+                "reserva": true
+            },
+            {
+                "id": 12,
+                "hora": "17:05h",
+                "reserva": true
+            },
+            {
+                "id": 13,
+                "hora": "17:40h",
+                "reserva": true
+            },
+            {
+                "id": 14,
+                "hora": "18:15h",
+                "reserva": true
+            },
+            {
+                "id": 15,
+                "hora": "18:50h",
+                "reserva": true
+            },
+            {
+                "id": 16,
+                "hora": "19:25h",
+                "reserva": true
+            },
+            {
+                "id": 17,
+                "hora": "20:00h",
+                "reserva": true
+            },
+            {
+                "id": 18,
+                "hora": "20:35h",
+                "reserva": true
+            },
+            {
+                "id": 19,
+                "hora": "21:10h",
+                "reserva": true
+            },
+            {
+                "id": 20,
+                "hora": "00:00h",
+                "reserva": true
+            }
+        ],
+        "nome": "Sábado"
+    }
+]
+
 const isDebug = () => {
     try {
         return (window.location.host === 'localhost:3000')
@@ -796,10 +1703,18 @@ const isDebug = () => {
 }
 
 const verificaHorarios = async (dia, id) => {
+    this.setState({dialogLoading: true, mensagemLoading: 'Verificando horários...'})
+    const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
     return await fetch(isDebug()
-            ? `https://barbearia-teste-5d937-default-rtdb.firebaseio.com/dias/${dia}/horarios/${id}.json`
-            : `https://barbearia-3f560-default-rtdb.firebaseio.com/dias/${dia}/horarios/${id}.json`,
-        {method: 'get'}).then((data) => data.json()).catch((error) => (error))
+            ? `https://barbearia-teste-5d937-default-rtdb.firebaseio.com/dias/${barbeiro}/${dia}/horarios/${id}.json`
+            : `https://barbearia-3f560-default-rtdb.firebaseio.com/dias/${barbeiro}/${dia}/horarios/${id}.json`,
+        {method: 'get'})
+        .then((data) => {
+            this.setState({dialogLoading: false})
+        }).catch((error) => {
+            this.setState({dialogLoading: false})
+            console.error(error)
+        })
 }
 
 const timestamp = () => {
@@ -819,4 +1734,30 @@ const mobile = () => {
     return check
 }
 
-export {liberarTodos, isDebug, verificaHorarios, timestamp, codigoDia, mobile}
+const alteraHorarios = (minutosAdiconal, horaInicio, horaFim, reserva) => {
+    const horarios = []
+    let hora = horaInicio
+    let id = 0
+    horarios.push({
+        id: id++,
+        hora: horaInicio + 'h',
+        reserva: reserva
+    })
+    while (true) {
+        hora = moment(hora, 'HH:mm').add(minutosAdiconal, 'minutes').format('HH:mm')
+        if (moment(horaFim, 'HH:mm').toDate().getTime() < moment(hora, 'HH:mm').toDate().getTime()) break
+        horarios.push({
+            id: id,
+            hora: hora + 'h',
+            reserva: reserva
+        })
+        id++
+    }
+    console.log(horarios)
+}
+
+//alteraHorarios(25, '07:00', '20:00', false)
+
+//console.log(liberarTodosNatal)
+
+export {liberarTodos, alteraHorarios, isDebug, verificaHorarios, timestamp, codigoDia, mobile}

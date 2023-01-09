@@ -15,7 +15,7 @@ import {
     Toolbar,
     Typography
 } from '@mui/material'
-import logo from '../images/logo.png'
+import logo from '../images/logo.jpeg'
 import firebase from '../firebase'
 import {ArrowBack} from '@mui/icons-material'
 import moment from 'moment'
@@ -39,7 +39,6 @@ const theme = createTheme({
 class Home extends React.Component {
 
     state = {
-        dialogLogo: true,
         dialogMeusHorario: false,
         servicos: [],
         historico: []
@@ -51,13 +50,6 @@ class Home extends React.Component {
             dashbord = 0
         }
         dashbord++
-    }
-
-    logo = () => {
-        if (this.props.location.marcado === 'ok')
-            this.setState({dialogLogo: false})
-        else
-            setTimeout(() => this.setState({dialogLogo: false}), 1200)
     }
 
     servicos = () => {
@@ -94,16 +86,14 @@ class Home extends React.Component {
     }
 
     componentDidMount() {
-        this.logo()
-        this.servicos()
-        this.buscaServicos()
         this.meusHorarios()
     }
 
     render() {
-        const {dialogLogo, dialogMeusHorario, servicos, historico} = this.state
+        const {dialogMeusHorario, servicos, historico} = this.state
         return (
             <div id={'home'}>
+                {((parseInt(process.env.REACT_APP_VERSION_CODE) % 2 === 0)) && <div id={'div-update'}/>}
                 <ThemeProvider theme={theme}>
                     <div>
                         <AppBar position="static" color={'primary'}>
@@ -115,25 +105,18 @@ class Home extends React.Component {
                         </AppBar>
                         <div>
                             <div class={'div-container'}>
-                                <FormLabel class={'label-titulo-container'}>Horário de atendimento</FormLabel>
-                                <FormLabel class={'label-descricao-horario'}>Seg a Sáb</FormLabel>
+                                <FormLabel class={'label-titulo-container'}>
+                                    Horário de atendimento
+                                </FormLabel>
+                                <FormLabel class={'label-descricao-horario'}>
+                                    Seg a Sáb
+                                </FormLabel>
                                 <FormLabel class={'label-descricao-horario'}>
                                     09:00 ás 12:00 e das 14:00 ás 21:00
                                 </FormLabel>
                             </div>
-                            <div class={'div-container'}>
-                                <FormLabel class={'label-titulo-container'}>Serviços</FormLabel>
-                                {
-                                    servicos.map(s => (
-                                        <div id={'div-servico'} key={s.servico}>
-                                            <FormLabel id={'label-servico'}>{s.servico}</FormLabel>
-                                            <FormLabel id={'label-valor'}>{s.valor.toLocaleString('pt-BR', {
-                                                style: 'currency',
-                                                currency: 'BRL'
-                                            })}</FormLabel>
-                                        </div>
-                                    ))
-                                }
+                            <div className={'div-container'}>
+                                <CardMedia id={'card-media-logo'} image={logo}/>
                             </div>
                             <div className={'div-container'}>
                                 <div id={'div-botao'} onClick={() => this.props.history.push('/agendar')}>
@@ -162,13 +145,6 @@ class Home extends React.Component {
                             <div id={this.dataAlteracao()}/>
                         </div>
                     </div>
-                    <Dialog open={dialogLogo} fullScreen={true}>
-                        <div id={'div-dialog-logo'}>
-                            <CardMedia id={'card-media-logo'} image={logo}/>
-                            <Box p={2}/>
-                            <CircularProgress color={'secondary'} size={50}/>
-                        </div>
-                    </Dialog>
                     <Dialog open={dialogMeusHorario} fullScreen={true}>
                         <div id={'div-dialog-full-screen'}>
                             <div id={'div-voltar'}>
@@ -184,9 +160,27 @@ class Home extends React.Component {
                                 {
                                     historico.map((h, index) => (
                                         <div id={'div-servico'} key={index}>
-                                            <FormLabel id={'label-servico'}>{h.servico}</FormLabel>
-                                            <FormLabel id={'label-valor'}>{h.hora}</FormLabel>
-                                            <FormLabel id={'label-valor'}>{h.dia}</FormLabel>
+                                            <FormLabel id={'label-servico'}>
+                                                {`Serviço: ${h.servico}`}
+                                            </FormLabel>
+                                            <FormLabel id={'label-valor'}>
+                                                {`Hora do atendimento: ${h.hora}`}
+                                            </FormLabel>
+                                            <FormLabel id={'label-valor'}>
+                                                {`Dia da semana: ${h.dia}`}
+                                            </FormLabel>
+                                            {
+                                                (!!h.barbeiro) &&
+                                                <FormLabel id={'label-valor'}>
+                                                    {`Barbeiro: ${h.barbeiro.nome}`}
+                                                </FormLabel>
+                                            }
+                                            {
+                                                (!!h.agendamento) &&
+                                                <FormLabel id={'label-valor'}>
+                                                    {`Agendamento: ${h.agendamento}`}
+                                                </FormLabel>
+                                            }
                                         </div>
                                     ))
                                 }

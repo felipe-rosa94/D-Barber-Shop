@@ -2,7 +2,7 @@ import React from 'react'
 import '../styles/style.css'
 import {ArrowBack} from '@mui/icons-material'
 import {Box, CardMedia, createTheme, FormLabel, ThemeProvider} from '@mui/material'
-import logo from '../images/logo.png'
+import logo from '../images/logo.jpeg'
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
 import {codigoDia} from '../util'
 

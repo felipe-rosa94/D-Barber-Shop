@@ -1,6 +1,6 @@
 {
   "name": "diegobarbershop",
-  "version": "0.1.13",
+  "version": "0.1.18",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.8.2",
@@ -17,6 +17,7 @@
     "react": "^17.0.2",
     "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^17.0.2",
+    "react-lottie": "^1.2.3",
     "react-qr-reader": "^3.0.0-beta-1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "5.0.0",
@@ -25,6 +26,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "win-build": "set \"GENERATE_SOURCEMAP=false\" && react-scripts build",
     "deploy": "set \"GENERATE_SOURCEMAP=false\" && react-scripts build && firebase deploy",
     "logout": "firebase logout",
     "login": "firebase login",

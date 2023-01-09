@@ -2,7 +2,7 @@ import React from 'react'
 import '../styles/style.css'
 import {
     Box,
-    Button,
+    Button, CardMedia,
     createTheme,
     Dialog,
     DialogActions,
@@ -27,6 +27,17 @@ import {CopyToClipboard} from 'react-copy-to-clipboard'
 import firebase from '../firebase'
 import moment from 'moment'
 import {isDebug, verificaHorarios} from '../util'
+import Lottie from 'react-lottie'
+import loading from '../images/loading.json'
+
+const loadingOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: loading,
+    rendererSettings: {
+        preserveAspectRatio: "xMidYMid slice"
+    }
+}
 
 const theme = createTheme({
     palette: {
@@ -53,7 +64,8 @@ class Agendar extends React.Component {
     state = {
         openSnackbar: false,
         snackbar: '',
-        dialogServico: true,
+        dialogServico: false,
+        dialogBarbeiro: true,
         dialogAgendado: false,
         dialogHorario: false,
         dialogPix: false,
@@ -66,7 +78,10 @@ class Agendar extends React.Component {
         dia: new Date().getDay(),
         hora: '',
         nome: '',
-        telefone: ''
+        telefone: '',
+        barbeiros: [],
+        dialogLoading: false,
+        mensagemLoading: 'Carregando...'
     }
 
     handleInput = e => {
@@ -91,6 +106,16 @@ class Agendar extends React.Component {
             dia: dia,
             horariosLivres: this.verificaHorarios(horarios, servico)
         })
+    }
+
+    onClickBarbeiro = (id) => {
+        this.setState({
+            dialogBarbeiro: false,
+            dialogServico: true
+        })
+        sessionStorage.setItem('dbarbershop-barbeiro', id)
+        this.buscaServicos()
+        this.buscaDias()
     }
 
     onClickServico = servico => {
@@ -166,7 +191,8 @@ class Agendar extends React.Component {
     }
 
     onClickAgendar = async () => {
-        const {nome, telefone, horario, servico, dia, hora} = this.state
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
+        const {nome, telefone, horario, servico, dia, hora, barbeiros} = this.state
         if (nome === '') {
             this.setState({dialogAgendado: false})
             alert('Nome inválido')
@@ -176,10 +202,19 @@ class Agendar extends React.Component {
         horario.nome = nome
         horario.telefone = telefone
         horario.servico = servico.servico
+        horario.valor = servico.valor
         horario.hora = hora
         horario.dia = this.diasSemana(dia)
         horario.versao = process.env.REACT_APP_VERSAO
-        horario[new Date().getTime()] = `${horario.nome} - ${moment().format('DD/MM/YYYY HH:MM:SS')}`
+        horario[new Date().getTime()] = `${horario.nome} - ${moment().format('DD/MM/YYYY HH:mm:ss')}`
+        horario.barbeiro = barbeiros[parseInt(barbeiro)]
+        horario.agendamento = moment().format('DD/MM/YY HH:mm')
+        horario.codigo = new Date().getTime()
+        try {
+            delete horario.barbeiro.foto
+        } catch (e) {
+
+        }
         try {
             const {reserva} = await verificaHorarios(dia, horario.id)
             if (reserva) {
@@ -198,7 +233,8 @@ class Agendar extends React.Component {
             dia: dia,
             data: moment().format('DD/MM/YYYY'),
             id: new Date().getTime(),
-            versao: process.env.REACT_APP_VERSAO
+            versao: process.env.REACT_APP_VERSAO,
+            barbeiro: barbeiros[parseInt(barbeiro)].nome
         }
         if (servico.qtdHorarios === 1) {
             this.gravaHorario(dia, horario)
@@ -211,10 +247,11 @@ class Agendar extends React.Component {
                 telefone: horario.telefone,
                 reserva: true,
                 versao: process.env.REACT_APP_VERSAO,
-                [new Date().getTime()]: `${horario.nome} - ${moment().format('DD/MM/YYYY HH:MM:SS')}`
+                [new Date().getTime()]: `${horario.nome} - ${moment().format('DD/MM/YYYY HH:mm:ss')}`
             })
             this.gravaAgenda(dia, agenda)
         }
+        this.gravaValores(horario)
         localStorage.setItem('dbarbershop-nome', nome)
         localStorage.setItem('dbarbershop-telefone', telefone)
         let historico = localStorage.getItem('dbarbershop-historico')
@@ -222,9 +259,10 @@ class Agendar extends React.Component {
         historico.push(horario)
         localStorage.setItem('dbarbershop-historico', JSON.stringify(historico))
         this.setState({dialogAgendado: true})
-        let mensagem = `Bom dia é o *${nome}*.\nMarquei um horário ${(dia === new Date().getDay()) ? 'hoje' : this.diasSemana(dia)}, às ${hora} para fazer *${servico.servico}.*\n\nMeu telefone pra contato: *${telefone}*`
+        let mensagem = `Bom dia é o *${nome}*.\nMarquei com ${barbeiros[parseInt(barbeiro)].nome} um horário ${(dia === new Date().getDay()) ? 'hoje' : this.diasSemana(dia)}, às ${hora} para fazer *${servico.servico}.*\n\nMeu telefone pra contato: *${telefone}*`
         mensagem = window.encodeURIComponent(mensagem)
-        window.location.assign(`https://api.whatsapp.com/send?phone=5551984266928&text=${mensagem}`)
+        if (!isDebug())
+            window.location.assign(`https://api.whatsapp.com/send?phone=5551984266928&text=${mensagem}`)
         this.props.history.replace({
             pathname: '/',
             marcado: 'ok'
@@ -250,33 +288,73 @@ class Agendar extends React.Component {
         }
     }
 
+    filtraHorarios = (dia, {hora, reserva}) => {
+        const date = new Date()
+        if (dia === date.getDay()) {
+            hora = hora.replace('h', '')
+            return (moment(hora, 'HH:mm').toDate().getTime() >= date.getTime()) && !reserva
+        } else {
+            return !reserva
+        }
+    }
+
     gravaHorario = (dia, horario) => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
         firebase
             .database()
-            .ref('dias/' + dia + '/horarios/' + horario.id)
+            .ref(`dias/${barbeiro}/${dia}/horarios/${horario.id}`)
             .update(horario)
             .then(() => console.log('ok'))
             .catch(e => console.error(e))
     }
 
     gravaAgenda = (dia, agenda) => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
         firebase
             .database()
-            .ref('agenda/' + dia + '/horarios/' + agenda.id)
+            .ref(`agenda/${barbeiro}/${dia}/horarios/${agenda.id}`)
             .update(agenda)
+            .then(() => console.log('ok'))
+            .catch(e => console.error(e))
+    }
+
+    gravaValores = (horario) => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
+        firebase
+            .database()
+            .ref(`valores/${barbeiro}/${horario.codigo}`)
+            .set(horario)
             .then(() => console.log('ok'))
             .catch(e => console.error(e))
     }
 
     servicos = () => {
         let servicos = sessionStorage.getItem('dbarbershop-servico')
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
         this.setState({servicos: (servicos !== null) ? JSON.parse(servicos) : []})
     }
 
-    buscaDias = () => {
+    buscaBarbeiros = () => {
+        this.setState({dialogLoading: true, mensagemLoading: 'Buscando barbeiros...'})
         firebase
             .database()
-            .ref('dias')
+            .ref('barbeiros')
+            .once('value')
+            .then(callback => {
+                const barbeiros = callback.val()
+                this.setState({
+                    barbeiros: (!!barbeiros) ? barbeiros : []
+                })
+                this.setState({dialogLoading: false})
+            })
+    }
+
+    buscaDias = () => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
+        this.setState({dialogLoading: true, mensagemLoading: 'Buscando horários...'})
+        firebase
+            .database()
+            .ref('dias/' + barbeiro)
             .on('value', callback => {
                 let dias = callback.val()
                 if (dias !== null) {
@@ -290,6 +368,30 @@ class Agendar extends React.Component {
                         horariosLivres: []
                     })
                 }
+                this.setState({dialogLoading: false})
+            })
+    }
+
+    buscaServicos = () => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
+        this.setState({dialogLoading: true, mensagemLoading: 'Buscando serviços...'})
+        firebase
+            .database()
+            .ref('servicos/' + barbeiro)
+            .once('value')
+            .then(callback => {
+                let servicos = callback.val()
+                if (servicos !== null) {
+                    servicos = Object.values(servicos)
+                    servicos = servicos.sort((a, b) => {
+                        if (a.servico > b.servico) return 1
+                        if (a.servico < b.servico) return -1
+                        return 0
+                    })
+                    this.setState({servicos: servicos})
+                    sessionStorage.setItem('dbarbershop-servico', JSON.stringify(servicos))
+                }
+                this.setState({dialogLoading: false})
             })
     }
 
@@ -300,8 +402,7 @@ class Agendar extends React.Component {
     }
 
     componentDidMount() {
-        this.buscaDias()
-        this.servicos()
+        this.buscaBarbeiros()
         this.identificacao()
     }
 
@@ -311,6 +412,7 @@ class Agendar extends React.Component {
             dialogAvisoMensagem,
             dialogServico,
             dialogHorario,
+            dialogBarbeiro,
             dialogIdentificacao,
             dialogAgendado,
             dialogPix,
@@ -323,14 +425,62 @@ class Agendar extends React.Component {
             telefone,
             openSnackbar,
             snackbar,
+            barbeiros,
+            dialogLoading,
+            mensagemLoading
         } = this.state
         return (
             <div id={'agendar'}>
                 <ThemeProvider theme={theme}>
-                    <Dialog open={dialogServico} fullScreen={true}>
+                    <Dialog open={dialogBarbeiro} fullScreen={true}>
                         <div id={'div-dialog-full-screen'}>
                             <div id={'div-voltar'}>
                                 <ArrowBack onClick={() => this.props.history.goBack()}/>
+                                <FormLabel id={'label-voltar'}>Voltar</FormLabel>
+                            </div>
+                            <DialogTitle
+                                style={{fontFamily: 'Nunito', paddingTop: 10}}
+                                color={'secondary'}>
+                                Barbeiro
+                            </DialogTitle>
+                            <DialogContent>
+                                <DialogContentText
+                                    style={{fontFamily: 'Nunito', fontSize: 'medium'}}
+                                    color={'white'}>
+                                    Selecione o barbeiro
+                                </DialogContentText>
+                                {
+                                    barbeiros.map(b => (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                flexDirection: 'row',
+                                                marginTop: 8,
+                                                cursor: 'pointer'
+                                            }}
+                                            key={b.nome}
+                                            onClick={() => this.onClickBarbeiro(b.id)}>
+                                            <div id={'div-barbeiro'}>
+                                                <CardMedia image={b.foto} id={'card-media-barbeiro'}/>
+                                            </div>
+                                            <Box p={1}/>
+                                            <FormLabel style={{cursor: 'pointer'}} id={'label-servico'}>
+                                                {b.nome}
+                                            </FormLabel>
+                                        </div>
+                                    ))
+                                }
+                            </DialogContent>
+                        </div>
+                    </Dialog>
+                    <Dialog open={dialogServico} fullScreen={true}>
+                        <div id={'div-dialog-full-screen'}>
+                            <div id={'div-voltar'}>
+                                <ArrowBack onClick={() => this.setState({
+                                    dialogServico: false,
+                                    dialogBarbeiro: true
+                                })}/>
                                 <FormLabel id={'label-voltar'}>Voltar</FormLabel>
                             </div>
                             <DialogTitle style={{fontFamily: 'Nunito', paddingTop: 10}}
@@ -409,7 +559,7 @@ class Agendar extends React.Component {
                                             // eslint-disable-next-line array-callback-return
                                             dias.map(d => {
                                                 const dia = new Date().getDay()
-                                                if (d.dia >= dia) {
+                                                if (d.dia >= dia || true) {
                                                     return (
                                                         <MenuItem key={d.dia} value={d.dia}>{d.nome}</MenuItem>
                                                     )
@@ -424,7 +574,7 @@ class Agendar extends React.Component {
                                         {
                                             // eslint-disable-next-line array-callback-return
                                             horariosLivres.map(h => {
-                                                if (!h.reserva)
+                                                if (this.filtraHorarios(dia, h))
                                                     return (<FormControlLabel
                                                         checked={hora === h.hora}
                                                         key={h.hora}
@@ -566,6 +716,19 @@ class Agendar extends React.Component {
                             </DialogContent>
                         </div>
                     </Dialog>
+                    <Dialog open={dialogLoading}>
+                        <DialogContent id={'dialog-content-loading'}>
+                            <Lottie
+                                options={loadingOptions}
+                                width={100}
+                                height={100}
+                            />
+                            <Box p={1}/>
+                            <DialogContentText id={'dialog-content-text-loading'}>
+                                {mensagemLoading}
+                            </DialogContentText>
+                        </DialogContent>
+                    </Dialog>
                     <Snackbar
                         anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
                         open={openSnackbar}
@@ -577,6 +740,8 @@ class Agendar extends React.Component {
             </div>
         )
     }
+
+
 }
 
 export default Agendar

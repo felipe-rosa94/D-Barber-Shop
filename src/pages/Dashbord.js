@@ -6,6 +6,7 @@ import {
     Button,
     Card,
     CardContent,
+    CardMedia,
     createTheme,
     Dialog,
     DialogActions,
@@ -23,17 +24,22 @@ import {
     Toolbar,
     Typography
 } from '@mui/material'
-import {
-    Add,
-    ArrowBack,
-    Delete,
-    Edit,
-    RemoveRedEye
-} from '@mui/icons-material'
+import {Add, ArrowBack, Delete, Edit, RemoveRedEye} from '@mui/icons-material'
 import {withStyles} from '@mui/styles'
 import firebase from '../firebase'
-import {codigoDia, liberarTodos, timestamp} from '../util'
+import {codigoDia, liberarTodos, liberarTodosNatal, timestamp} from '../util'
 import QRCode from 'qrcode.react'
+import Lottie from 'react-lottie'
+import loading from '../images/loading.json'
+
+const loadingOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: loading,
+    rendererSettings: {
+        preserveAspectRatio: "xMidYMid slice"
+    }
+}
 
 const theme = createTheme({
     palette: {
@@ -51,7 +57,7 @@ const theme = createTheme({
 
 const CheckButton = withStyles({
     checked: {},
-})(props => <Radio color="secondary" {...props} />)
+})(props => <Radio color={'secondary'} {...props} />)
 
 class Dashbord extends React.Component {
 
@@ -65,6 +71,7 @@ class Dashbord extends React.Component {
         dialogHorariosLiberados: false,
         dialogLiberarHorarios: false,
         dialogFidelidade: false,
+        dialogBarbeiro: false,
         usuario: '',
         senha: '',
         servicos: [],
@@ -79,7 +86,12 @@ class Dashbord extends React.Component {
             servico: ''
         },
         dias: [],
-        agenda: []
+        agenda: [],
+        barbeiros: [],
+        foto: '',
+        nome: '',
+        dialogLoading: false,
+        mensagemLoading: 'Carregando...'
     }
 
     handleInput = e => this.setState({[e.target.name]: e.target.value})
@@ -96,24 +108,25 @@ class Dashbord extends React.Component {
     }
 
     onClickLiberarTodos = () => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
         this.setState({dialogLiberarHorarios: false})
         let agenda = localStorage.getItem('dbarbershop-agenda')
         agenda = (agenda !== null) ? JSON.parse(agenda) : []
         firebase
             .database()
-            .ref('historico/' + timestamp())
+            .ref(`historico/${barbeiro}/${timestamp()}`)
             .set(agenda)
             .then(() => console.log('ok'))
             .catch(e => console.error(e))
         firebase
             .database()
-            .ref('agenda/')
+            .ref(`agenda/${barbeiro}`)
             .remove()
             .then(() => console.log('ok'))
             .catch(e => console.error(e))
         firebase
             .database()
-            .ref('dias/')
+            .ref(`dias/${barbeiro}`)
             .set(liberarTodos)
             .then(() => {
                 this.setState({dialogHorariosLiberados: true})
@@ -124,22 +137,24 @@ class Dashbord extends React.Component {
         localStorage.setItem('dbarbershop-agenda', JSON.stringify([]))
     }
 
-    onClickLoja = () =>
-        this.props.history.push('/')
+    onClickLoja = () => this.props.history.push('/')
 
-    gravarDias = dias =>
+    gravarDias = dias => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
         firebase
             .database()
-            .ref('dias/')
+            .ref(`dias/${barbeiro}`)
             .update(dias)
-            .then(() => console.log)
+            .then(() => console.log())
             .catch(e => console.error(e))
+    }
 
     onClickVerReserva = reserva => {
         this.setState({dialogReserva: true, reserva: reserva})
     }
 
     onClickGravar = () => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
         const {servico, servicos} = this.state
         if (servico.servico === '' || servico.valor === '') {
             this.setState({dialogCadastrarServico: false})
@@ -147,10 +162,10 @@ class Dashbord extends React.Component {
             return
         }
         if (servico.id === undefined) {
-            servico.id = servicos.length.toString()
+            servico.id = new Date().getTime().toString()
             firebase
                 .database()
-                .ref('servicos/' + servico.id)
+                .ref(`servicos/${barbeiro}/${servico.id}`)
                 .set(servico)
                 .then(() => {
                     this.setState({
@@ -165,9 +180,10 @@ class Dashbord extends React.Component {
                 })
                 .catch(e => console.error(e))
         } else {
+            const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
             firebase
                 .database()
-                .ref('servicos/' + servico.id)
+                .ref(`servicos/${barbeiro}/${servico.id}`)
                 .update(servico)
                 .then(() => {
                     this.setState({
@@ -191,24 +207,33 @@ class Dashbord extends React.Component {
         })
     }
 
-    onClickDeletar = id => firebase
-        .database()
-        .ref('servicos/' + id)
-        .remove()
-        .then(() => {
-            this.buscaServicos()
-        })
-        .catch(e => {
-            console.error(e)
-        })
-
-    onClickDeletarAgenda = agenda =>
+    onClickDeletar = id => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
         firebase
             .database()
-            .ref('agenda/' + agenda.dia + '/horarios/' + agenda.id)
+            .ref(`servicos/${barbeiro}/${id}`)
+            .remove()
+            .then(() => this.buscaServicos())
+            .catch(e => console.error(e))
+    }
+
+    onClickDeletarAgenda = agenda => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
+        firebase
+            .database()
+            .ref(`agenda/${barbeiro}/${agenda.dia}/horarios/${agenda.id}`)
             .remove()
             .then(() => this.buscaAgenda())
             .catch(e => console.error(e))
+    }
+
+    onClickBarbeiro = ({id, nome, foto}) => {
+        this.setState({dialogBarbeiro: false, foto: foto, nome: nome})
+        sessionStorage.setItem('dbarbershop-barbeiro', id)
+        this.buscaDias()
+        this.buscaServicos()
+        this.buscaAgenda()
+    }
 
     onClickLogin = () => {
         const {usuario, senha} = this.state
@@ -217,24 +242,42 @@ class Dashbord extends React.Component {
             .signInWithEmailAndPassword(usuario.toLowerCase(), senha)
             .then((data) => {
                 localStorage.setItem('dbarbershop-login', 'ok')
-                this.setState({dialogLogin: false})
+                this.setState({dialogLogin: false, dialogBarbeiro: true})
             })
             .catch((e) => console.log(e))
     }
 
     login = () => {
         let login = localStorage.getItem('dbarbershop-login')
-        this.setState({dialogLogin: (login !== 'ok')})
+        this.setState({dialogLogin: (login !== 'ok'), dialogBarbeiro: (!!login)})
     }
 
-    buscaServicos = () =>
+    buscaBarbeiros = () => {
+        this.setState({dialogLoading: true, mensagemLoading: 'Buscando barbeiros...'})
         firebase
             .database()
-            .ref('servicos')
+            .ref('barbeiros')
+            .once('value')
+            .then(callback => {
+                const barbeiros = callback.val()
+                this.setState({
+                    barbeiros: (!!barbeiros) ? barbeiros : []
+                })
+                this.setState({dialogLoading: false})
+            })
+    }
+
+    buscaServicos = () => {
+        this.setState({dialogLoading: true, mensagemLoading: 'Buscando serviços...'})
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
+        firebase
+            .database()
+            .ref('servicos/' + barbeiro)
             .once('value')
             .then(callback => {
                 let servicos = callback.val()
                 if (servicos !== null) {
+                    servicos = Object.values(servicos)
                     servicos = servicos.sort((a, b) => {
                         if (a.servico > b.servico) return 1
                         if (a.servico < b.servico) return -1
@@ -244,25 +287,38 @@ class Dashbord extends React.Component {
                 } else {
                     this.setState({servicos: []})
                 }
+                this.setState({dialogLoading: false})
             })
+    }
 
-    buscaDias = () =>
+    buscaDias = () => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
+        this.setState({dialogLoading: true, mensagemLoading: 'Buscando horarios...'})
         firebase
             .database()
-            .ref('dias')
+            .ref('dias/' + barbeiro)
             .once('value')
             .then(callback => {
                 if (callback.val() !== null) this.setState({dias: callback.val()})
+                this.setState({dialogLoading: false})
             })
+    }
 
-    buscaAgenda = () =>
+    buscaAgenda = () => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
+        this.setState({dialogLoading: true, mensagemLoading: 'Buscando agenda...'})
         firebase
             .database()
-            .ref('agenda')
+            .ref('agenda/' + barbeiro)
             .once('value')
             .then(callback => {
                 if (callback.val() !== null) {
-                    let agenda = Object.values(callback.val()[new Date().getDay()].horarios)
+                    let agenda = []
+                    try {
+                        agenda = Object.values(callback.val()[new Date().getDay()].horarios)
+                    } catch (e) {
+
+                    }
                     agenda.sort((a, b) => {
                         if (a.hora > b.hora)
                             return 1
@@ -276,13 +332,13 @@ class Dashbord extends React.Component {
                     this.setState({agenda: []})
                     localStorage.setItem('dbarbershop-agenda', JSON.stringify([]))
                 }
+                this.setState({dialogLoading: false})
             })
+    }
 
     componentDidMount() {
         this.login()
-        this.buscaDias()
-        this.buscaServicos()
-        this.buscaAgenda()
+        this.buscaBarbeiros()
     }
 
     render() {
@@ -300,46 +356,101 @@ class Dashbord extends React.Component {
             servico,
             reserva,
             dias,
-            agenda
+            agenda,
+            dialogBarbeiro,
+            barbeiros,
+            foto,
+            nome,
+            dialogLoading,
+            mensagemLoading
         } = this.state
         return (
             <div>
                 <ThemeProvider theme={theme}>
                     <AppBar position="static" color={'primary'}>
-                        <Toolbar>
+                        <Toolbar style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between"
+                        }}>
                             <Typography variant="h6" component="div" color={'secondary'}>
                                 Dashbord
                             </Typography>
+                            <div>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        flexDirection: 'row',
+                                        marginTop: 8
+                                    }}
+                                    onClick={() => this.setState({dialogBarbeiro: true})}>
+                                    <div id={'div-barbeiro'}>
+                                        <CardMedia image={foto} style={{width: 40, height: 40, borderRadius: 20}}
+                                                   id={'card-media-barbeiro'}/>
+                                    </div>
+                                    <Box p={1}/>
+                                    <FormLabel style={{cursor: 'pointer'}} id={'label-servico'}>
+                                        {nome}
+                                    </FormLabel>
+                                </div>
+                            </div>
                         </Toolbar>
                     </AppBar>
                     <div className={'div-container'}>
                         <div id={'div-botao'} onClick={() => this.setState({dialogAgenda: true})}>
-                            <FormLabel id={'label-botao'}>Agenda do dia</FormLabel>
+                            <FormLabel id={'label-botao'}>
+                                Agenda do dia
+                            </FormLabel>
                         </div>
                     </div>
                     <div className={'div-container'}>
                         <div id={'div-botao'} onClick={() => this.setState({dialogServico: true})}>
-                            <FormLabel id={'label-botao'}>Serviços</FormLabel>
+                            <FormLabel id={'label-botao'}>
+                                Serviços
+                            </FormLabel>
                         </div>
                     </div>
                     <div className={'div-container'}>
                         <div id={'div-botao'} onClick={() => this.setState({dialogDias: true})}>
-                            <FormLabel id={'label-botao'}>Horários</FormLabel>
+                            <FormLabel id={'label-botao'}>
+                                Horários
+                            </FormLabel>
                         </div>
                     </div>
                     <div className={'div-container'}>
                         <div id={'div-botao'} onClick={() => this.setState({dialogLiberarHorarios: true})}>
-                            <FormLabel id={'label-botao'}>Liberar todos os horários</FormLabel>
+                            <FormLabel id={'label-botao'}>
+                                Liberar todos os horários
+                            </FormLabel>
                         </div>
                     </div>
                     <div className={'div-container'}>
                         <div id={'div-botao'} onClick={this.onClickLoja}>
-                            <FormLabel id={'label-botao'}>Area do Cliente</FormLabel>
+                            <FormLabel id={'label-botao'}>
+                                Área do cliente
+                            </FormLabel>
                         </div>
                     </div>
                     <div className={'div-container'}>
                         <div id={'div-botao'} onClick={() => this.setState({dialogFidelidade: true})}>
-                            <FormLabel id={'label-botao'}>Gerar QR Code Fidelidade</FormLabel>
+                            <FormLabel id={'label-botao'}>
+                                Gerar QR Code fidelidade
+                            </FormLabel>
+                        </div>
+                    </div>
+                    <div className={'div-container'}>
+                        <div id={'div-botao'} onClick={() => this.setState({dialogBarbeiro: true})}>
+                            <FormLabel id={'label-botao'}>
+                                Alterar barbeiro
+                            </FormLabel>
+                        </div>
+                    </div>
+                    <div className={'div-container'}>
+                        <div id={'div-botao'} onClick={() => this.props.history.push('/relatorios')}>
+                            <FormLabel id={'label-botao'}>
+                                Relatórios
+                            </FormLabel>
                         </div>
                     </div>
                     <Dialog open={dialogLogin} fullScreen={true}>
@@ -379,6 +490,49 @@ class Dashbord extends React.Component {
                                         onClick={this.onClickLogin}>
                                     Entrar
                                 </Button>
+                            </DialogContent>
+                        </div>
+                    </Dialog>
+                    <Dialog open={dialogBarbeiro} fullScreen={true}>
+                        <div id={'div-dialog-full-screen'}>
+                            <DialogTitle
+                                style={{fontFamily: 'Nunito', paddingTop: 10}}
+                                color={'secondary'}>
+                                Barbeiro
+                            </DialogTitle>
+                            <DialogContent>
+                                <DialogContentText
+                                    style={{fontFamily: 'Nunito', fontSize: 'medium'}}
+                                    color={'white'}>
+                                    Selecione o barbeiro
+                                </DialogContentText>
+                                {
+                                    barbeiros.map(b => (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                flexDirection: 'row',
+                                                marginTop: 8,
+                                                cursor: 'pointer'
+                                            }}
+                                            key={b.nome}
+                                            onClick={() => {
+
+                                                this.onClickBarbeiro(b)
+                                            }}
+                                        >
+                                            <div id={'div-barbeiro'}>
+                                                <CardMedia image={b.foto} id={'card-media-barbeiro'}/>
+                                            </div>
+
+                                            <Box p={1}/>
+                                            <FormLabel style={{cursor: 'pointer'}} id={'label-servico'}>
+                                                {b.nome}
+                                            </FormLabel>
+                                        </div>
+                                    ))
+                                }
                             </DialogContent>
                         </div>
                     </Dialog>
@@ -749,6 +903,19 @@ class Dashbord extends React.Component {
                                 </Button>
                             </DialogActions>
                         </div>
+                    </Dialog>
+                    <Dialog open={dialogLoading}>
+                        <DialogContent id={'dialog-content-loading'}>
+                            <Lottie
+                                options={loadingOptions}
+                                width={100}
+                                height={100}
+                            />
+                            <Box p={1}/>
+                            <DialogContentText id={'dialog-content-text-loading'}>
+                                {mensagemLoading}
+                            </DialogContentText>
+                        </DialogContent>
                     </Dialog>
                 </ThemeProvider>
             </div>

@@ -59,7 +59,7 @@ const CheckButton = withStyles({
     checked: {},
 })(props => <Radio color={'secondary'} {...props} />)
 
-class Dashbord extends React.Component {
+class Dashboard extends React.Component {
 
     state = {
         dialogLogin: true,
@@ -134,6 +134,12 @@ class Dashbord extends React.Component {
                 this.buscaAgenda()
             })
             .catch(e => console.error(e))
+        firebase
+            .database()
+            .ref(`valores`)
+            .remove()
+            .then(() => console.log('ok'))
+            .catch(e => console.error(e))
         localStorage.setItem('dbarbershop-agenda', JSON.stringify([]))
     }
 
@@ -149,9 +155,7 @@ class Dashbord extends React.Component {
             .catch(e => console.error(e))
     }
 
-    onClickVerReserva = reserva => {
-        this.setState({dialogReserva: true, reserva: reserva})
-    }
+    onClickVerReserva = reserva => this.setState({dialogReserva: true, reserva: reserva})
 
     onClickGravar = () => {
         const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
@@ -365,8 +369,8 @@ class Dashbord extends React.Component {
             mensagemLoading
         } = this.state
         return (
-            <div>
-                <ThemeProvider theme={theme}>
+            <ThemeProvider theme={theme}>
+                <div>
                     <AppBar position="static" color={'primary'}>
                         <Toolbar style={{
                             display: "flex",
@@ -397,60 +401,62 @@ class Dashbord extends React.Component {
                             </div>
                         </Toolbar>
                     </AppBar>
-                    <div className={'div-container'}>
-                        <div id={'div-botao'} onClick={() => this.setState({dialogAgenda: true})}>
-                            <FormLabel id={'label-botao'}>
-                                Agenda do dia
-                            </FormLabel>
+                    <div>
+                        <div className={'div-container'}>
+                            <div id={'div-botao'} onClick={() => this.setState({dialogAgenda: true})}>
+                                <FormLabel id={'label-botao'}>
+                                    Agenda do dia
+                                </FormLabel>
+                            </div>
                         </div>
-                    </div>
-                    <div className={'div-container'}>
-                        <div id={'div-botao'} onClick={() => this.setState({dialogServico: true})}>
-                            <FormLabel id={'label-botao'}>
-                                Serviços
-                            </FormLabel>
+                        <div className={'div-container'}>
+                            <div id={'div-botao'} onClick={() => this.setState({dialogServico: true})}>
+                                <FormLabel id={'label-botao'}>
+                                    Serviços
+                                </FormLabel>
+                            </div>
                         </div>
-                    </div>
-                    <div className={'div-container'}>
-                        <div id={'div-botao'} onClick={() => this.setState({dialogDias: true})}>
-                            <FormLabel id={'label-botao'}>
-                                Horários
-                            </FormLabel>
+                        <div className={'div-container'}>
+                            <div id={'div-botao'} onClick={() => this.setState({dialogDias: true})}>
+                                <FormLabel id={'label-botao'}>
+                                    Horários
+                                </FormLabel>
+                            </div>
                         </div>
-                    </div>
-                    <div className={'div-container'}>
-                        <div id={'div-botao'} onClick={() => this.setState({dialogLiberarHorarios: true})}>
-                            <FormLabel id={'label-botao'}>
-                                Liberar todos os horários
-                            </FormLabel>
+                        <div className={'div-container'}>
+                            <div id={'div-botao'} onClick={() => this.setState({dialogLiberarHorarios: true})}>
+                                <FormLabel id={'label-botao'}>
+                                    Liberar todos os horários
+                                </FormLabel>
+                            </div>
                         </div>
-                    </div>
-                    <div className={'div-container'}>
-                        <div id={'div-botao'} onClick={this.onClickLoja}>
-                            <FormLabel id={'label-botao'}>
-                                Área do cliente
-                            </FormLabel>
+                        <div className={'div-container'}>
+                            <div id={'div-botao'} onClick={this.onClickLoja}>
+                                <FormLabel id={'label-botao'}>
+                                    Área do cliente
+                                </FormLabel>
+                            </div>
                         </div>
-                    </div>
-                    <div className={'div-container'}>
-                        <div id={'div-botao'} onClick={() => this.setState({dialogFidelidade: true})}>
-                            <FormLabel id={'label-botao'}>
-                                Gerar QR Code fidelidade
-                            </FormLabel>
+                        <div className={'div-container'}>
+                            <div id={'div-botao'} onClick={() => this.setState({dialogFidelidade: true})}>
+                                <FormLabel id={'label-botao'}>
+                                    Gerar QR Code fidelidade
+                                </FormLabel>
+                            </div>
                         </div>
-                    </div>
-                    <div className={'div-container'}>
-                        <div id={'div-botao'} onClick={() => this.setState({dialogBarbeiro: true})}>
-                            <FormLabel id={'label-botao'}>
-                                Alterar barbeiro
-                            </FormLabel>
-                        </div>
-                    </div>
-                    <div className={'div-container'}>
-                        <div id={'div-botao'} onClick={() => this.props.history.push('/relatorios')}>
-                            <FormLabel id={'label-botao'}>
-                                Relatórios
-                            </FormLabel>
+                        {/*<div className={'div-container'}>*/}
+                        {/*    <div id={'div-botao'} onClick={() => this.setState({dialogBarbeiro: true})}>*/}
+                        {/*        <FormLabel id={'label-botao'}>*/}
+                        {/*            Alterar barbeiro*/}
+                        {/*        </FormLabel>*/}
+                        {/*    </div>*/}
+                        {/*</div>*/}
+                        <div className={'div-container'}>
+                            <div id={'div-botao'} onClick={() => this.props.history.push('/relatorios')}>
+                                <FormLabel id={'label-botao'}>
+                                    Relatórios
+                                </FormLabel>
+                            </div>
                         </div>
                     </div>
                     <Dialog open={dialogLogin} fullScreen={true}>
@@ -917,10 +923,10 @@ class Dashbord extends React.Component {
                             </DialogContentText>
                         </DialogContent>
                     </Dialog>
-                </ThemeProvider>
-            </div>
+                </div>
+            </ThemeProvider>
         )
     }
 }
 
-export default Dashbord
+export default Dashboard

@@ -740,8 +740,6 @@ class Agendar extends React.Component {
             </div>
         )
     }
-
-
 }
 
 export default Agendar

@@ -4,7 +4,6 @@ import {
     AppBar,
     Box,
     CardMedia,
-    CircularProgress,
     createTheme,
     Dialog,
     DialogContent,
@@ -81,16 +80,14 @@ class Home extends React.Component {
         this.setState({historico: historico})
     }
 
-    dataAlteracao = () => {
-        return moment().format('DD/MM/YYYY')
-    }
+    dataAlteracao = () => moment().format('DD/MM/YYYY')
 
     componentDidMount() {
         this.meusHorarios()
     }
 
     render() {
-        const {dialogMeusHorario, servicos, historico} = this.state
+        const {dialogMeusHorario, historico} = this.state
         return (
             <div id={'home'}>
                 {((parseInt(process.env.REACT_APP_VERSION_CODE) % 2 === 0)) && <div id={'div-update'}/>}

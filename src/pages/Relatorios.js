@@ -8,11 +8,11 @@ import {
     DialogContentText,
     DialogTitle,
     Divider,
-    FormLabel,
+    FormLabel, IconButton,
     ThemeProvider
 } from '@mui/material'
 import firebase from '../firebase'
-import {ArrowBack} from '@mui/icons-material'
+import {ArrowBack, Delete} from '@mui/icons-material'
 import Lottie from 'react-lottie'
 import loading from '../images/loading.json'
 
@@ -113,6 +113,20 @@ export default class Relatorios extends React.Component {
             })
     }
 
+    onClickDelete = codigo => {
+        const barbeiro = sessionStorage.getItem('dbarbershop-barbeiro')
+        firebase
+            .database()
+            .ref(`valores/${barbeiro}/${codigo}`)
+            .remove()
+            .then(() => {
+                console.log('valor deletado')
+                this.buscaValores()
+                this.setState({dialogAgendamentos: false})
+            })
+            .catch(e => console.error(e))
+    }
+
     componentDidMount() {
         this.buscaValores()
     }
@@ -139,7 +153,7 @@ export default class Relatorios extends React.Component {
             mensagemLoading
         } = this.state
         return (
-            <div>
+            <div id={'relatorio'}>
                 <ThemeProvider theme={theme}>
                     <div>
                         <div id={'div-voltar'}>
@@ -311,6 +325,9 @@ export default class Relatorios extends React.Component {
                                                         {a.hora}
                                                     </FormLabel>
                                                 </div>
+                                                <IconButton onClick={() => this.onClickDelete(a.codigo)}>
+                                                    <Delete/>
+                                                </IconButton>
                                             </div>
                                         ))
                                     }
